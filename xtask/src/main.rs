@@ -4,6 +4,7 @@ use std::process;
 
 use anyhow::Result;
 use clap::Parser;
+use xtask::codegen;
 use xtask::symlink_root;
 use xtask::Bin;
 
@@ -26,8 +27,8 @@ struct Build {
 #[derive(Parser)]
 enum Command {
   Bin(Bin),
-  /// Echo information about the current project
-  Echo,
+  /// Generate code for the project
+  Codegen,
   /// Symlink the project and install all binaries.
   Setup,
   /// Run cargo commands serially in the workspace
@@ -53,11 +54,14 @@ fn main() -> Result<()> {
     .init();
 
   match options.cmd {
-    Command::Echo => {
-      std::process::Command::new("echo")
-        .arg("Hello, world!")
-        .spawn()?
-        .wait()?;
+    Command::Codegen => {
+      codegen::generate_ast()?;
+      process::Command::new("cargo")
+        .stdout(process::Stdio::inherit())
+        .stderr(process::Stdio::inherit())
+        .stdin(process::Stdio::inherit())
+        .arg("fix:format")
+        .output()?;
     }
 
     Command::Setup => {

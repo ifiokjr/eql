@@ -4,3 +4,4 @@ default-members = ["crates/*"]
 
 [workspace.dependencies]
 insta = "1.21.0"
+rome_rowan = { git = "https://github.com/rome/tools", rev = "b6af8f0222" }

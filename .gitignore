@@ -138,3 +138,5 @@ packages/skribble-css/tailwind.config.js
 # START SYMLINK
 dprint.json
 # END SYMLINK
+
+dbschema

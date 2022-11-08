@@ -1,0 +1,366 @@
+// EdgeDB Schema Definition Language Un-Grammar.
+//
+// This grammar specifies the structure of `.esdl` concrete syntax tree.
+// It does not specify parsing rules (ambiguities, precedence, etc are out of scope).
+// Tokens are processed -- contextual keywords are recognised, compound operators glued.
+//
+// Legend:
+//
+//   //          				-- comment
+//   Name =      				-- non-terminal definition
+//   'ident'     				-- token (terminal)
+//   A B         				-- sequence
+//   A | B       				-- alternation
+//   A*          				-- zero or more repetition
+//   (A (',' A)* ','?)	        -- repetition of node A separated by ',' and allowing a trailing comma
+//   (A (',' A)*)	            -- repetition of node A separated by ',' without a trailing comma
+//   A?          				-- zero or one repetition
+//   (A)         				-- same as A
+//   label:A     				-- suggested name for field of AST node
+
+// NOTES
+//
+// - SyntaxNode, SyntaxToken and SyntaxElement will be stripped from the codegen
+// - Unknown nodes are special nodes used to keep track of broken code; they are
+//   not part of the grammar but they will appear inside the green tree
+//
+
+///////////////
+// UNKNOWN NODES
+///////////////
+// SyntaxElement is a generic data structure that is meant to track nodes and tokens
+// in cases where we care about both types
+//
+// As Unknown* node will need to yield both tokens and nodes without discrimination,
+// and their children will need to yield nodes and tokens as well.
+// For this reason, SyntaxElement = SyntaxElement
+SyntaxElement = SyntaxElement
+
+SdlUnknown = SyntaxElement*
+SdlUnknownSchema = SyntaxElement*
+SdlUnknownExpression = SyntaxElement*
+
+EmptyStatement = ';'
+
+
+// Names
+Name = UnqualifiedName | QualifiedName
+UnqualifiedName = 'ident'
+QualifiedName =
+  namespace: UnqualifiedName
+  '::'
+  name: UnqualifiedName
+DotReferenceName = UnqualifiedName '.' UnqualifiedName
+ParameterName =
+  '$'
+  name: UnqualifiedName
+
+SdlModule =
+  'module'
+  UnqualifiedName
+  '{'
+  statements: SdlSchema
+  '}'
+  ';'?
+
+SdlSchema = EmptyStatement
+  | SdlObjectSchema
+  | SdlAnnotationSchema
+
+SdlObjectSchema =
+  'abstract'?
+  'type'
+  name: Name
+  extending: SdlExtending?
+  body: SdlObjectBody
+
+SdlObjectBody = EmptyStatement | SdlObjectBlock
+SdlObjectBlock =
+  '{'
+  annotations: SdlAnnotation*
+  properties: SdlProperty*
+  links: SdlLink*
+  constraints: SdlConstraint*
+  indexes: SdlIndex*
+  '}'
+  ';'?
+
+SdlExtending =
+  'extending'
+  extends: SdlExtendingNames
+
+SdlExtendingNames = (Name SdlOptionalExtendingNames*)
+SdlOptionalExtendingNames = (',' Name)
+
+/// ```
+/// annotation admin_note := 'system-critical';
+/// ```
+///
+/// The assigned value must be a / string although `$$` strings are not allowed.
+/// The `r` modifier is allowed though.
+SdlAnnotation =
+  'annotation'
+  name: UnqualifiedName
+  ':='
+  value: StringLiteralExpression
+  EmptyStatement
+SdlAnnotationSchema =
+  'abstract'
+  'inheritable'?
+  'annotation'
+  name: Name
+  body: SdlAnnotationSchemaBody
+
+SdlAnnotationSchemaBody = EmptyStatement | SdlAnnotationSchemaBlock
+SdlAnnotationSchemaBlock =
+  '{'
+  annotations: SdlAnnotation*
+  '}'
+  ';'?
+
+/// SDL Scalar
+///
+/// ```esdl
+/// scalar type posint64 extending int64 {
+///   constraint min_value(0);
+/// }
+/// ```
+
+SdlScalarSchema =
+  'abstract'?
+  'scalar type'
+  name: Name
+  extending: SdlScalarExtending?
+  body: SdlScalarBody
+SdlScalarExtending =
+  'extending'
+  extends: (SdlExtendingNames | SdlEnumDeclaration)
+SdlScalarBody = EmptyStatement | SdlScalarBlock
+SdlScalarBlock =
+  '{'
+  annotations: SdlAnnotation*
+  constraints: SdlConstraint*
+  '}'
+  ';'?
+
+
+/// ```esdl
+/// constraint min_value(0);
+/// ```
+SdlConstraint =
+  'delegated'
+  'constraint'
+  name: Name
+  args: SdlConstraintArgs?
+  subject: SdlConstraintSubjectExpression?
+  except: SdlConstraintExcept?
+  body: SdlConstraintBody
+SdlConstraintArgs =
+  '('
+  args: SdlConstraintArg*
+  ')'
+SdlConstraintArg =
+  name: (UnqualifiedName ':')?
+  value: Expression
+SdlConstraintExcept =
+  'except'
+  expression: Expression
+SdlConstraintBody = EmptyStatement | SdlConstraintBlock
+SdlConstraintBlock =
+ '{'
+    annotations: SdlAnnotation*
+    error_message: SdlConstraintErrorMessage?
+  '}'
+  ';'?
+
+SdlSchemaConstraint =
+  'abstract'
+  'constraint'
+  name: Name
+  params: SdlSchemaConstraintArgs?
+  subject: SdlConstraintSubjectExpression?
+  extending: SdlExtending?
+  body: SdlSchemaConstraintBody
+SdlSchemaConstraintArgs =
+  '('
+  params: SdlSchemaConstrainParam*
+  ')'
+SdlSchemaConstrainParam =
+  name: (UnqualifiedName ':')?
+  param_type: TypeExpression
+SdlSchemaConstraintBody = EmptyStatement | SdlSchemaConstraintBlock
+SdlSchemaConstraintBlock =
+ '{'
+    using: Expression
+    annotations: SdlAnnotation*
+    error_message: SdlConstraintErrorMessage?
+  '}'
+  ';'?
+
+SdlConstraintErrorMessage =
+  'errmessage'
+  ':='
+  message: StringLiteralExpression
+  EmptyStatement
+SdlConstraintSubjectExpression =
+  'on'
+  '('
+  expression: Expression
+  ')'
+
+
+SdlProperty = SdlUnknown
+SdlLink = SdlUnknown
+SdlIndex = SdlUnknown
+
+SdlEnumDeclaration =
+  'enum'
+  '<'
+  members: SdlEnumDeclarationMembers
+  '>'
+
+SdlEnumDeclarationMembers = (UnqualifiedName (',' UnqualifiedName)*)
+
+//
+// EdgeQL
+//
+
+Unknown = SyntaxElement*
+Expression = Unknown
+
+
+AnyLiteralExpression =
+	StringLiteralExpression
+	| IntLiteralExpression
+	| FloatLiteralExpression
+	| BigIntLiteralExpression
+	| DecimalLiteralExpression
+	| BooleanLiteralExpression
+	| BytesLiteralExpression
+	| RawBytesLiteralExpression
+
+// "abcd" | 'abcd' | $$abcd$$ | $a$abcd$a$
+StringLiteralExpression = RawStringLiteralExpression | BareStringLiteralExpression
+
+RawStringLiteralExpression =
+  'r'
+  value: 'string_literal'
+BareStringLiteralExpression =
+  value: 'string_literal'
+
+ByteLiteralExpression =
+  raw: 'r'?
+  'b'
+  value: 'byte_literal'
+
+BytesLiteralExpression = RawBytesLiteralExpression | BareBytesLiteralExpression
+RawBytesLiteralExpression =
+  'b'
+  RawStringLiteralExpression
+
+BareBytesLiteralExpression =
+  'r'?
+  'b'
+  BareStringLiteralExpression
+
+// 4, 5, 0, ...
+IntLiteralExpression = value: 'int_literal'
+
+// 4.67, 314e-2, 0.0, ...
+FloatLiteralExpression = value: 'float_literal'
+
+// 4n, 5n, 0n, ...
+BigIntLiteralExpression =  value: 'big_int_literal'
+
+// 4.67n, 314e-2n, 0.0n, ...
+DecimalLiteralExpression =  value: 'decimal_literal'
+
+// true, false
+BooleanLiteralExpression = value_token: ('true' | 'false')
+
+TypeCastExpression =
+	'<'
+	type: TypeExpression
+	'>'
+	target: TypeCastTarget
+
+TypeCastTarget =
+  AnyLiteralExpression
+  | ParameterName
+
+
+TypeExpression =
+  PrimitiveType
+  | ArrayType
+  | TupleType
+  | RangeType
+  | Name
+
+PrimitiveType =
+  StringType
+  | BooleanType
+  | IntSixteenType
+  | IntThirtyTwoType
+  | IntSixtyFourType
+  | FloatThirtyTwoType
+  | FloatSixtyFourType
+  | BigIntType
+  | DecimalType
+  | JsonType
+  | UuidType
+  | BytesType
+  | DateTimeType
+  | DurationType
+  | SequenceType
+  | SdlEnumDeclaration
+
+// Predefined types
+StringType = 'str'
+BooleanType = 'bool'
+IntSixteenType = 'int16' // Numbers in names break the parser
+IntThirtyTwoType = 'int32'
+IntSixtyFourType = 'int64'
+FloatThirtyTwoType = 'float32'
+FloatSixtyFourType = 'float64'
+BigIntType = 'bigint'
+DecimalType = 'decimal'
+JsonType = 'json'
+UuidType = 'uuid'
+BytesType = 'bytes'
+DateTimeType = 'datetime'
+DurationType = 'duration'
+// This is not really used as a type since it is cast to a int64
+SequenceType = 'sequence'
+
+RangeType =
+  'range'
+  '<'
+  member: RangeTypeMember
+  '>'
+RangeTypeMember =
+  IntThirtyTwoType
+  | IntSixtyFourType
+  | FloatThirtyTwoType
+  | FloatSixtyFourType
+  | DecimalType
+  // `cal::local_datetime` | `cal::local_date`
+  | QualifiedName
+
+ArrayType =
+  'array'
+  '<'
+  member: PrimitiveType
+  '>'
+
+TupleType =
+  'tuple'
+  '<'
+  members: TupleTypeMembers
+  '>'
+TupleTypeMembers = (TypeExpression (',' TypeExpression)*)
+
+//
+// DDL
+//
+
+
