@@ -59,10 +59,12 @@ SdlModule =
   'module'
   UnqualifiedName
   '{'
-  statements: SdlSchema
+  statements: SdlSchemaStatments
   '}'
   ';'?
 
+
+SdlSchemaStatments = SdlSchema*
 SdlSchema = EmptyStatement
   | SdlObjectSchema
   | SdlAnnotationSchema
@@ -77,11 +79,11 @@ SdlObjectSchema =
 SdlObjectBody = EmptyStatement | SdlObjectBlock
 SdlObjectBlock =
   '{'
-  annotations: SdlAnnotation*
-  properties: SdlProperty*
-  links: SdlLink*
-  constraints: SdlConstraint*
-  indexes: SdlIndex*
+  annotations: SdlAnnotationList
+  properties: SdlPropertyList
+  links: SdlLinkList
+  constraints: SdlConstraintList
+  indexes: SdlIndexList
   '}'
   ';'?
 
@@ -89,8 +91,12 @@ SdlExtending =
   'extending'
   extends: SdlExtendingNames
 
-SdlExtendingNames = (Name SdlOptionalExtendingNames*)
-SdlOptionalExtendingNames = (',' Name)
+SdlAnnotationList = SdlAnnotation*
+SdlPropertyList = SdlProperty*
+SdlLinkList = SdlLink*
+SdlConstraintList = SdlConstraint*
+SdlIndexList = SdlIndex*
+SdlExtendingNames = (Name (',' Name)*)
 
 /// ```
 /// annotation admin_note := 'system-critical';
@@ -114,7 +120,7 @@ SdlAnnotationSchema =
 SdlAnnotationSchemaBody = EmptyStatement | SdlAnnotationSchemaBlock
 SdlAnnotationSchemaBlock =
   '{'
-  annotations: SdlAnnotation*
+  annotations: SdlAnnotationList
   '}'
   ';'?
 
@@ -128,7 +134,8 @@ SdlAnnotationSchemaBlock =
 
 SdlScalarSchema =
   'abstract'?
-  'scalar type'
+  'scalar'
+  'type'
   name: Name
   extending: SdlScalarExtending?
   body: SdlScalarBody
@@ -138,8 +145,8 @@ SdlScalarExtending =
 SdlScalarBody = EmptyStatement | SdlScalarBlock
 SdlScalarBlock =
   '{'
-  annotations: SdlAnnotation*
-  constraints: SdlConstraint*
+  annotations: SdlAnnotationList
+  constraints: SdlConstraintList
   '}'
   ';'?
 
@@ -157,18 +164,19 @@ SdlConstraint =
   body: SdlConstraintBody
 SdlConstraintArgs =
   '('
-  args: SdlConstraintArg*
+  args: SdlConstraintArgList
   ')'
 SdlConstraintArg =
   name: (UnqualifiedName ':')?
   value: Expression
+SdlConstraintArgList = SdlConstraintArg*
 SdlConstraintExcept =
   'except'
   expression: Expression
 SdlConstraintBody = EmptyStatement | SdlConstraintBlock
 SdlConstraintBlock =
  '{'
-    annotations: SdlAnnotation*
+    annotations: SdlAnnotationList
     error_message: SdlConstraintErrorMessage?
   '}'
   ';'?
@@ -183,16 +191,17 @@ SdlSchemaConstraint =
   body: SdlSchemaConstraintBody
 SdlSchemaConstraintArgs =
   '('
-  params: SdlSchemaConstrainParam*
+  params: SdlSchemaConstrainParamList
   ')'
 SdlSchemaConstrainParam =
   name: (UnqualifiedName ':')?
   param_type: TypeExpression
+SdlSchemaConstrainParamList = SdlSchemaConstrainParam*
 SdlSchemaConstraintBody = EmptyStatement | SdlSchemaConstraintBlock
 SdlSchemaConstraintBlock =
  '{'
     using: Expression
-    annotations: SdlAnnotation*
+    annotations: SdlAnnotationList
     error_message: SdlConstraintErrorMessage?
   '}'
   ';'?
@@ -237,7 +246,6 @@ AnyLiteralExpression =
 	| DecimalLiteralExpression
 	| BooleanLiteralExpression
 	| BytesLiteralExpression
-	| RawBytesLiteralExpression
 
 // "abcd" | 'abcd' | $$abcd$$ | $a$abcd$a$
 StringLiteralExpression = RawStringLiteralExpression | BareStringLiteralExpression
@@ -247,12 +255,6 @@ RawStringLiteralExpression =
   value: 'string_literal'
 BareStringLiteralExpression =
   value: 'string_literal'
-
-ByteLiteralExpression =
-  raw: 'r'?
-  'b'
-  value: 'byte_literal'
-
 BytesLiteralExpression = RawBytesLiteralExpression | BareBytesLiteralExpression
 RawBytesLiteralExpression =
   'b'

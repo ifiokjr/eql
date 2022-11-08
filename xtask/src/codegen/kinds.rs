@@ -378,12 +378,12 @@ impl Field {
           "?=" => "not_distinct_from",
           "?!=" => "distinct_from",
           "," => "comma",
-          "(" => "open_paren",
-          ")" => "close_paren",
-          "[" => "open_square",
-          "]" => "close_square",
-          "{" => "open_curly",
-          "}" => "close_curly",
+          "'('" => "open_paren",
+          "')'" => "close_paren",
+          "'['" => "open_square",
+          "']'" => "close_square",
+          "'{'" => "open_curly",
+          "'}'" => "close_curly",
           "." => "dot",
           ";" => "semicolon",
           ":" => "colon",
@@ -399,8 +399,10 @@ impl Field {
           "&" => "ampersand",
           "|" => "pipe",
           "@" => "at",
+          "$" => "dollar",
           _ => name,
         };
+        println!("The name: {}_token", name);
         format_ident!("{}_token", name)
       }
       Field::Node { name, .. } => {
