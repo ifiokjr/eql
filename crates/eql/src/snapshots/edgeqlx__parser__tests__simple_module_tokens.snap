@@ -1,0 +1,38 @@
+---
+source: crates/eql/src/parser.rs
+expression: tokens
+---
+[
+    SpannedToken {
+        token: Token {
+            kind: Keyword,
+            value: "module",
+        },
+        start: Pos(1:1),
+        end: Pos(1:7),
+    },
+    SpannedToken {
+        token: Token {
+            kind: Ident,
+            value: "default",
+        },
+        start: Pos(1:8),
+        end: Pos(1:15),
+    },
+    SpannedToken {
+        token: Token {
+            kind: OpenBrace,
+            value: "{",
+        },
+        start: Pos(1:16),
+        end: Pos(1:17),
+    },
+    SpannedToken {
+        token: Token {
+            kind: CloseBrace,
+            value: "}",
+        },
+        start: Pos(1:17),
+        end: Pos(1:18),
+    },
+]

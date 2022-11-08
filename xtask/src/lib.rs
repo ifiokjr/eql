@@ -246,26 +246,11 @@
 
 use std::process::Command;
 
-#[macro_use]
-pub mod cfg;
 mod bin;
-mod dev_server;
-mod dist;
 mod symlink_root;
-mod wasm_opt;
-mod watch;
 
 pub use bin::Bin;
-pub use dev_server::*;
-pub use dist::*;
-pub use sass_rs;
 pub use symlink_root::symlink_root;
-pub use wasm_opt::*;
-
-pub use crate::watch::metadata;
-pub use crate::watch::package;
-pub use crate::watch::xtask_command;
-pub use crate::watch::Watch;
 
 /// Get the default command for the build in the dist process.
 ///

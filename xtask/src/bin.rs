@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::env;
+use std::fmt::Display;
 use std::fs;
 use std::path;
 use std::path::Path;
@@ -24,6 +25,7 @@ struct PkgVersion {
 struct RootDeps {
   deps: BTreeMap<String, Dependency>,
   path: PathBuf,
+  #[allow(dead_code)]
   valid: bool,
 }
 
@@ -139,45 +141,15 @@ fn get_pkg_version(bin_name: &str) -> Result<PkgVersion> {
 
 fn run_binary(args: &Vec<String>) -> Result<()> {
   let mut args = args.to_owned();
-
-  let mut rust_version = "unknown".to_string();
-  if let Some(res) = version_check::triple() {
-    if res.1.is_nightly() {
-      rust_version = "nightly".to_string();
-    } else {
-      rust_version = res.0.to_string();
-    }
-  }
-
   let bin_name = args[0].to_owned();
-  let pkg_version = get_pkg_version(&bin_name)?;
-  let cache_path = f!("./.bin/rust-{rust_version}/{pkg_version.name}/{pkg_version.version}");
-  let mut cache_bin_path = f!("{cache_path}/bin/{bin_name}");
+  let (pkg_version, cache_path, mut cache_bin_path) = get_binary_paths(&bin_name)?;
 
   let mut env_path = match env::var("PATH") {
     Ok(val) => val,
-    Err(_) => "".to_owned(), // TODO throw err;
+    Err(_) => return Ok(()), // TODO throw err;
   };
 
-  if !path::Path::new(&cache_bin_path).exists() {
-    println!("Creating directory {cache_path} for {bin_name}");
-    fs::create_dir_all(&cache_path)?;
-    process::Command::new("cargo")
-      .stdout(process::Stdio::inherit())
-      .stderr(process::Stdio::inherit())
-      .stdin(process::Stdio::inherit())
-      .arg("install")
-      .arg("--root")
-      .arg(&cache_path)
-      .arg("--target-dir")
-      .arg("./target") // TODO fix target dir alongside cargo.toml later
-      .arg("--version")
-      .arg(pkg_version.version)
-      .arg(pkg_version.name)
-      .output()?;
-  } else {
-    println!("Binary found!");
-  }
+  install_binary(&cache_bin_path, &cache_path, pkg_version, &bin_name)?;
 
   args.drain(0..1);
   println!("Running binary {cache_bin_path} with args {args:?}");
@@ -210,16 +182,68 @@ fn run_binary(args: &Vec<String>) -> Result<()> {
   Err(anyhow!(f!("Process {bin_name} failed to start")))
 }
 
+fn get_binary_paths<T: AsRef<str> + Display>(
+  bin_name: T,
+) -> Result<(PkgVersion, String, String), anyhow::Error> {
+  let mut rust_version = "unknown".to_string();
+  if let Some(res) = version_check::triple() {
+    if res.1.is_nightly() {
+      rust_version = "nightly".to_string();
+    } else {
+      rust_version = res.0.to_string();
+    }
+  }
+
+  let pkg_version = get_pkg_version(bin_name.as_ref())?;
+  let cache_path = f!("./.bin/rust-{rust_version}/{pkg_version.name}/{pkg_version.version}");
+  let cache_bin_path = f!("{cache_path}/bin/{bin_name}");
+
+  Ok((pkg_version, cache_path, cache_bin_path))
+}
+
+fn install_binary<T: AsRef<str> + Display>(
+  cache_bin_path: T,
+  cache_path: T,
+  pkg_version: PkgVersion,
+  bin_name: T,
+) -> Result<(), anyhow::Error> {
+  if !path::Path::new(cache_bin_path.as_ref()).exists() {
+    println!("Creating directory {cache_path} for {bin_name}");
+    fs::create_dir_all(cache_path.as_ref())?;
+    process::Command::new("cargo")
+      .stdout(process::Stdio::inherit())
+      .stderr(process::Stdio::inherit())
+      .stdin(process::Stdio::inherit())
+      .arg("install")
+      .arg("--root")
+      .arg(cache_path.as_ref())
+      .arg("--target-dir")
+      .arg("./target") // TODO fix target dir alongside cargo.toml later
+      .arg("--version")
+      .arg(pkg_version.version)
+      .arg(pkg_version.name)
+      .output()?;
+  } else {
+    println!("Binary '{}' found!", bin_name);
+  };
+
+  Ok(())
+}
+
 #[non_exhaustive]
 #[derive(Debug, Parser)]
 #[command(
-  about = "Run a local binary",
+  about = "Run a local binary from the workspace",
   long_about = "Taken from `cargo-run-bin`"
 )]
 pub struct Bin {
   /// Whether to list all available binaries
   #[arg(short, long, default_value_t = false)]
   list: bool,
+
+  /// Install all available binaries
+  #[arg(short, long, default_value_t = false)]
+  all: bool,
 
   /// The name and the rest of the args.
   rest: Vec<String>,
@@ -236,6 +260,28 @@ impl Bin {
         }
         Err(error) => {
           println!("{}", f!("run-bin failed: {error}"));
+        }
+      }
+    } else if self.all {
+      match get_binaries() {
+        Ok(binaries) => {
+          for binary in binaries {
+            if binary == "stdio-fixture" {
+              continue;
+            }
+
+            match get_binary_paths(&binary) {
+              Ok((pkg_version, cache_path, cache_bin_path)) => {
+                install_binary(cache_bin_path, cache_path, pkg_version, binary).ok();
+              }
+              Err(error) => {
+                println!("{}", f!("install-bin failed for {binary}: {error}"));
+              }
+            }
+          }
+        }
+        Err(error) => {
+          println!("{}", f!("run-bin --all failed: {error}"));
         }
       }
     } else {

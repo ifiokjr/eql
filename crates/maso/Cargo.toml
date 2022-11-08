@@ -1,9 +1,0 @@
-[package]
-name = "maso"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-yew = { git = "https://github.com/yewstack/yew", rev = "da09755c27bfeb113e0c4b1096214a826f1e8388" }

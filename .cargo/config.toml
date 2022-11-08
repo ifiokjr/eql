@@ -1,5 +1,17 @@
+[env]
+UPDATE_XFLAGS = "1"
+
 [alias]
-xtask = "run --package xtask --"
-dist = "xtask dist"
-bin = "xtask bin"
+"bin" = "xtask bin"
+"serial" = "xtask serial"
+"parallel" = "xtask parallel"
+"bootstrap" = "bin setup"
+"fix" = "serial fix:clippy fix:format"
+"fix:clippy" = "clippy --fix --allow-dirty --allow-staged"
+"fix:format" = "bin dprint fmt"
+"lint" = "serial lint:clippy lint:format"
+"lint:clippy" = "clippy"
+"lint:format" = "bin dprint fmt"
+"snapshot" = "bin cargo-insta review"
 "upgrade:workspace" = "bin cargo-upgrade"
+"xtask" = "run --package xtask --"

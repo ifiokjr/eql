@@ -1,0 +1,18 @@
+[package]
+name = "eql"
+version = "0.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+combine = "4.6.6"
+edgedb-derive = "0.4.0"
+edgedb-tokio = "0.3.0"
+edgeql-parser = { git = "https://github.com/edgedb/edgedb", rev = "7045e20d7154414b227c1d9aef5aa42210a650e2" }
+indexmap = "1.9.1"
+strum = { version = "0.24.1", features = ["derive"] }
+thiserror = "1.0.37"
+
+[dev-dependencies]
+insta.workspace = true
