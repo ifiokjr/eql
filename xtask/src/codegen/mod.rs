@@ -56,6 +56,11 @@ impl SharedQuotes {
   pub(crate) fn language(&self) -> TokenStream {
     quote! { EqlLanguage }
   }
+
+  #[inline]
+  pub(crate) fn factory_kind(&self) -> TokenStream {
+    quote! { EqlSyntaxFactory }
+  }
 }
 
 /// A helper to update file on disk if it has changed.
@@ -89,11 +94,11 @@ pub enum Mode {
 }
 
 mod generate_ast;
-// mod generate_macros;
-// mod generate_node_factory;
+mod generate_macros;
+mod generate_node_factory;
 mod generate_nodes;
-// mod generate_nodes_mut;
-// mod generate_syntax_factory;
+mod generate_nodes_mut;
+mod generate_syntax_factory;
 // mod generate_syntax_kinds;
 mod kinds;
 mod macros;

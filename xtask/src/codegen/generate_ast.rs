@@ -14,7 +14,11 @@ use ungrammar::Grammar;
 use ungrammar::Rule;
 use ungrammar::Token;
 
+use super::generate_macros::generate_macros;
+use super::generate_node_factory::generate_node_factory;
 use super::generate_nodes::generate_nodes;
+use super::generate_nodes_mut::generate_nodes_mut;
+use super::generate_syntax_factory::generate_syntax_factory;
 use super::kinds::AstEnumSrc;
 use super::kinds::AstListSeparatorConfiguration;
 use super::kinds::AstListSrc;
@@ -54,29 +58,31 @@ fn load_ast() -> AstSrc {
 }
 
 fn generate_syntax(ast: AstSrc) -> Result<()> {
+  let mode = Mode::Overwrite;
+
   let ast_nodes_file = project_root().join(AST_NODES);
   let contents = generate_nodes(&ast)?;
-  update(ast_nodes_file.as_path(), &contents, &Mode::Overwrite)?;
+  update(ast_nodes_file.as_path(), &contents, &mode)?;
 
-  // let ast_nodes_mut_file = project_root().join(AST_NODES_MUT);
-  // let contents = generate_nodes_mut(&ast, language_kind)?;
-  // update(ast_nodes_mut_file.as_path(), &contents, mode)?;
+  let ast_nodes_mut_file = project_root().join(AST_NODES_MUT);
+  let contents = generate_nodes_mut(&ast)?;
+  update(ast_nodes_mut_file.as_path(), &contents, &mode)?;
 
   // let syntax_kinds_file = project_root().join(SYNTAX_KINDS);
-  // let contents = generate_syntax_kinds(KINDS, language_kind)?;
+  // let contents = generate_syntax_kinds(KINDS)?;
   // update(syntax_kinds_file.as_path(), &contents, mode)?;
 
-  // let syntax_factory_file = project_root().join(SYNTAX_FACTORY);
-  // let contents = generate_syntax_factory(&ast, language_kind)?;
-  // update(syntax_factory_file.as_path(), &contents, mode)?;
+  let syntax_factory_file = project_root().join(SYNTAX_FACTORY);
+  let contents = generate_syntax_factory(&ast)?;
+  update(syntax_factory_file.as_path(), &contents, &mode)?;
 
-  // let node_factory_file = project_root().join(NODE_FACTORY);
-  // let contents = generate_node_factory(&ast, language_kind)?;
-  // update(node_factory_file.as_path(), &contents, mode)?;
+  let node_factory_file = project_root().join(NODE_FACTORY);
+  let contents = generate_node_factory(&ast)?;
+  update(node_factory_file.as_path(), &contents, &mode)?;
 
-  // let ast_macros_file = project_root().join(AST_MACROS);
-  // let contents = generate_macros(&ast, language_kind)?;
-  // update(ast_macros_file.as_path(), &contents, mode)?;
+  let ast_macros_file = project_root().join(AST_MACROS);
+  let contents = generate_macros(&ast)?;
+  update(ast_macros_file.as_path(), &contents, &mode)?;
 
   Ok(())
 }

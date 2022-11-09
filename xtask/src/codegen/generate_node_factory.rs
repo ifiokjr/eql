@@ -1,24 +1,25 @@
+use anyhow::Result;
+use heck::ToShoutySnakeCase;
+use heck::ToSnakeCase;
 use quote::format_ident;
 use quote::quote;
-use xtask::Result;
 
-use super::kinds_src::AstSrc;
-use crate::kinds_src::Field;
-use crate::to_lower_snake_case;
-use crate::to_upper_snake_case;
-use crate::LanguageKind;
+use super::kinds::AstSrc;
+use super::kinds::Field;
+use super::SharedQuotes;
 
-pub fn generate_node_factory(ast: &AstSrc, language_kind: LanguageKind) -> Result<String> {
-  let syntax_crate = language_kind.syntax_crate();
-  let syntax_kind = language_kind.syntax_kind();
-  let syntax_token = language_kind.syntax_token();
-  let syntax_node = language_kind.syntax_node();
-  let syntax_element = language_kind.syntax_element();
+pub fn generate_node_factory(ast: &AstSrc) -> Result<String> {
+  let shared_quotes = SharedQuotes {};
+  let syntax_crate = shared_quotes.syntax_crate();
+  let syntax_kind = shared_quotes.syntax_kind();
+  let syntax_token = shared_quotes.syntax_token();
+  let syntax_node = shared_quotes.syntax_node();
+  let syntax_element = shared_quotes.syntax_element();
 
   let nodes = ast.nodes.iter().map(|node| {
     let type_name = format_ident!("{}", node.name);
-    let kind = format_ident!("{}", to_upper_snake_case(&node.name));
-    let factory_name = format_ident!("{}", to_lower_snake_case(&node.name));
+    let kind = format_ident!("{}", &node.name.to_shouty_snake_case());
+    let factory_name = format_ident!("{}", &node.name.to_snake_case());
 
     let (optional, required): (Vec<_>, Vec<_>) =
       node.fields.iter().partition(|field| field.is_optional());
@@ -27,7 +28,7 @@ pub fn generate_node_factory(ast: &AstSrc, language_kind: LanguageKind) -> Resul
       let (args, slots): (Vec<_>, Vec<_>) = required
         .into_iter()
         .map(|field| {
-          let name = field.method_name(language_kind);
+          let name = field.method_name();
           let type_name = field.ty();
 
           let arg = quote! { #name: #type_name };
@@ -60,7 +61,7 @@ pub fn generate_node_factory(ast: &AstSrc, language_kind: LanguageKind) -> Resul
     let (required_args, required_fields): (Vec<_>, Vec<_>) = required
       .into_iter()
       .map(|field| {
-        let name = field.method_name(language_kind);
+        let name = field.method_name();
         let type_name = field.ty();
 
         let arg = quote! { #name: #type_name };
@@ -73,7 +74,7 @@ pub fn generate_node_factory(ast: &AstSrc, language_kind: LanguageKind) -> Resul
     let (optional_builder, optional_methods): (Vec<_>, Vec<_>) = optional
       .into_iter()
       .map(|field| {
-        let name = field.method_name(language_kind);
+        let name = field.method_name();
         let method_name = format_ident!("with_{}", name);
         let type_name = field.ty();
 
@@ -97,7 +98,7 @@ pub fn generate_node_factory(ast: &AstSrc, language_kind: LanguageKind) -> Resul
       .fields
       .iter()
       .map(|field| {
-        let name = field.method_name(language_kind);
+        let name = field.method_name();
         match field {
           Field::Token { optional, .. } => {
             if *optional {
@@ -144,8 +145,8 @@ pub fn generate_node_factory(ast: &AstSrc, language_kind: LanguageKind) -> Resul
 
   let lists = ast.lists().map(|(name, list)| {
     let list_name = format_ident!("{}", name);
-    let kind = format_ident!("{}", to_upper_snake_case(name));
-    let factory_name = format_ident!("{}", to_lower_snake_case(name));
+    let kind = format_ident!("{}", name.to_shouty_snake_case());
+    let factory_name = format_ident!("{}", name.to_snake_case());
     let item = format_ident!("{}", list.element_name);
 
     if list.separator.is_some() {
@@ -192,8 +193,8 @@ pub fn generate_node_factory(ast: &AstSrc, language_kind: LanguageKind) -> Resul
 
   let unknowns = ast.unknowns.iter().map(|name| {
     let unknown_name = format_ident!("{}", name);
-    let kind = format_ident!("{}", to_upper_snake_case(name));
-    let factory_name = format_ident!("{}", to_lower_snake_case(name));
+    let kind = format_ident!("{}", name.to_shouty_snake_case());
+    let factory_name = format_ident!("{}", name.to_snake_case());
 
     quote! {
         pub fn #factory_name<I>(slots: I) -> #unknown_name
@@ -220,6 +221,5 @@ pub fn generate_node_factory(ast: &AstSrc, language_kind: LanguageKind) -> Resul
       #(#unknowns)*
   };
 
-  let pretty = xtask::reformat(output)?;
-  Ok(pretty)
+  Ok(output.to_string())
 }

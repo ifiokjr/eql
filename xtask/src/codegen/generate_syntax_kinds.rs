@@ -1,15 +1,14 @@
+use anyhow::Result;
+use heck::ToShoutySnakeCase;
 use proc_macro2::Literal;
 use proc_macro2::Punct;
 use proc_macro2::Spacing;
 use quote::format_ident;
 use quote::quote;
 
-use super::kinds_src::KindsSrc;
-use crate::to_upper_snake_case;
-use crate::LanguageKind;
-use crate::Result;
+use super::kinds::AstKinds;
 
-pub fn generate_syntax_kinds(grammar: KindsSrc, language_kind: LanguageKind) -> Result<String> {
+pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
   let syntax_kind = language_kind.syntax_kind();
   let punctuation_values = grammar.punct.iter().map(|(token, _name)| {
     // These tokens, when parsed to proc_macro2::TokenStream, generates a stream of
@@ -37,7 +36,7 @@ pub fn generate_syntax_kinds(grammar: KindsSrc, language_kind: LanguageKind) -> 
   let full_keywords_values = &grammar.keywords;
   let full_keywords = full_keywords_values
     .iter()
-    .map(|kw| format_ident!("{}_KW", to_upper_snake_case(kw)))
+    .map(|kw| format_ident!("{}_KW", kw.to_shouty_snake_case()))
     .collect::<Vec<_>>();
 
   let all_keywords_values = grammar.keywords.to_vec();
@@ -47,7 +46,7 @@ pub fn generate_syntax_kinds(grammar: KindsSrc, language_kind: LanguageKind) -> 
     .collect::<Vec<_>>();
   let all_keywords = all_keywords_values
     .iter()
-    .map(|name| format_ident!("{}_KW", to_upper_snake_case(name)))
+    .map(|name| format_ident!("{}_KW", name.to_shouty_snake_case()))
     .collect::<Vec<_>>();
   let all_keyword_strings = all_keywords_values.iter().map(|name| name.to_string());
 
@@ -193,5 +192,5 @@ pub fn generate_syntax_kinds(grammar: KindsSrc, language_kind: LanguageKind) -> 
       }
   };
 
-  xtask::reformat(ast)
+  Ok(ast.to_string())
 }

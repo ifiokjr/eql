@@ -1,6 +1,6 @@
 # eql
 
-This is a language toolkit for edgedb with the lsp to make storing data simpler.
+> an experimental language service protocol for the edgedb.
 
 ## Contributing
 

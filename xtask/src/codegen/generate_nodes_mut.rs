@@ -1,12 +1,12 @@
+use anyhow::Result;
 use quote::format_ident;
 use quote::quote;
-use xtask::Result;
 
-use crate::kinds_src::AstSrc;
-use crate::kinds_src::Field;
-use crate::LanguageKind;
+use super::kinds::AstSrc;
+use super::kinds::Field;
+use super::SharedQuotes;
 
-pub fn generate_nodes_mut(ast: &AstSrc, language_kind: LanguageKind) -> Result<String> {
+pub fn generate_nodes_mut(ast: &AstSrc) -> Result<String> {
   let node_boilerplate_impls: Vec<_> = ast
     .nodes
     .iter()
@@ -18,7 +18,7 @@ pub fn generate_nodes_mut(ast: &AstSrc, language_kind: LanguageKind) -> Result<S
         .iter()
         .enumerate()
         .map(|(index, field)| {
-          let method_name = format_ident!("with_{}", field.method_name(language_kind));
+          let method_name = format_ident!("with_{}", field.method_name());
           let type_name = field.ty();
 
           let element = match field {
@@ -57,7 +57,8 @@ pub fn generate_nodes_mut(ast: &AstSrc, language_kind: LanguageKind) -> Result<S
     })
     .collect();
 
-  let syntax_token = language_kind.syntax_token();
+  let shared_quotes = SharedQuotes {};
+  let syntax_token = shared_quotes.syntax_token();
 
   let ast = quote! {
       use std::iter::once;
@@ -72,6 +73,5 @@ pub fn generate_nodes_mut(ast: &AstSrc, language_kind: LanguageKind) -> Result<S
     .replace("T ! [ ", "T![")
     .replace(" ] )", "])");
 
-  let pretty = xtask::reformat(ast)?;
-  Ok(pretty)
+  Ok(ast)
 }
