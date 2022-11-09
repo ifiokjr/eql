@@ -99,7 +99,7 @@ mod generate_node_factory;
 mod generate_nodes;
 mod generate_nodes_mut;
 mod generate_syntax_factory;
-// mod generate_syntax_kinds;
+mod generate_syntax_kinds;
 mod kinds;
 mod macros;
 mod nodes;

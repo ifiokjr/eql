@@ -19,6 +19,7 @@ use super::generate_node_factory::generate_node_factory;
 use super::generate_nodes::generate_nodes;
 use super::generate_nodes_mut::generate_nodes_mut;
 use super::generate_syntax_factory::generate_syntax_factory;
+use super::generate_syntax_kinds::generate_syntax_kinds;
 use super::kinds::AstEnumSrc;
 use super::kinds::AstListSeparatorConfiguration;
 use super::kinds::AstListSrc;
@@ -48,7 +49,7 @@ pub fn generate_ast() -> Result<()> {
   Ok(())
 }
 
-fn load_ast() -> AstSrc {
+pub(crate) fn load_ast() -> AstSrc {
   let grammar_src = include_str!("./edgedb.ungram");
   let grammar: Grammar = grammar_src.parse().unwrap();
   let ast: AstSrc = make_ast(&grammar);
@@ -68,9 +69,9 @@ fn generate_syntax(ast: AstSrc) -> Result<()> {
   let contents = generate_nodes_mut(&ast)?;
   update(ast_nodes_mut_file.as_path(), &contents, &mode)?;
 
-  // let syntax_kinds_file = project_root().join(SYNTAX_KINDS);
-  // let contents = generate_syntax_kinds(KINDS)?;
-  // update(syntax_kinds_file.as_path(), &contents, mode)?;
+  let syntax_kinds_file = project_root().join(SYNTAX_KINDS);
+  let contents = generate_syntax_kinds(KINDS)?;
+  update(syntax_kinds_file.as_path(), &contents, &mode)?;
 
   let syntax_factory_file = project_root().join(SYNTAX_FACTORY);
   let contents = generate_syntax_factory(&ast)?;

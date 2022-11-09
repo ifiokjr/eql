@@ -275,7 +275,7 @@ pub const KINDS: AstKinds<'_> = AstKinds {
   literals: LITERALS,
   tokens: TOKENS,
   nodes: NODES,
-  keywords: SDL_KEYWORDS,
+  keywords: SHARED_KEYWORDS,
   edgeql_keywords: EDGEQL_KEYWORDS,
   sdl_keywords: SDL_KEYWORDS,
   ddl_keywords: DDL_KEYWORDS,
@@ -370,7 +370,7 @@ impl Field {
           "??" => "coalesce",
           "::" => "namespace",
           ".<" => "backward_link",
-          "//" => "floor_div",
+          "'//'" => "floor_div",
           "++" => "concat",
           ">=" => "greater_equal",
           "<=" => "less_equal",
@@ -402,7 +402,6 @@ impl Field {
           "$" => "dollar",
           _ => name,
         };
-        println!("The name: {}_token", name);
         format_ident!("{}_token", name)
       }
       Field::Node { name, .. } => {
@@ -441,16 +440,22 @@ impl Field {
   }
 }
 
-#[derive(Debug, Eq, PartialEq)]
-pub enum Cardinality {
-  Optional,
-  Many,
-}
-
 #[derive(Debug, Clone)]
 pub struct AstEnumSrc {
   pub documentation: Vec<String>,
   pub name: String,
   // pub traits: Vec<String>,
   pub variants: Vec<String>,
+}
+
+#[cfg(test)]
+mod tests {
+  use crate::codegen::generate_ast::load_ast;
+
+  #[ignore]
+  #[test]
+  fn generate_nodes() {
+    let ast = load_ast();
+    assert_eq!(4, 4);
+  }
 }
