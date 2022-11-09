@@ -1,3 +1,5 @@
+// Generated file, do not edit by hand, see `xtask/src/codegen`
+
 use std::iter::once;
 
 use rome_rowan::AstNode;

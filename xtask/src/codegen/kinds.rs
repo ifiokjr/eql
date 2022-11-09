@@ -10,7 +10,7 @@ use super::nodes::NODES;
 const LANGUAGE_PREFIXES: [&str; 3] = ["eql_", "sdl_", "ddl_"];
 
 pub struct AstKinds<'a> {
-  pub punct: &'a [(&'a str, &'a str)],
+  pub punctuation: &'a [(&'a str, &'a str)],
   pub literals: &'a [&'a str],
   pub tokens: &'a [&'a str],
   pub nodes: &'a [&'a str],
@@ -130,9 +130,6 @@ const SHARED_KEYWORDS: &'_ [&'_ str] = &[
 ];
 
 const EDGEQL_KEYWORDS: &'_ [&'_ str] = &["asc", "desc", "union", "savepoint", "rollback"];
-// const EDGEQL_KEYWORDS: &'_ [&'_ str] = const_join!(&'_ str, SHARED_KEYWORDS,
-// EDGEQL_KEYWORDS_ONLY);
-
 const SDL_KEYWORDS: &'_ [&'_ str] = &[
   "annotation",
   "link",
@@ -141,14 +138,11 @@ const SDL_KEYWORDS: &'_ [&'_ str] = &[
   "using",
   "volatility",
 ];
-// const SDL_KEYWORDS: &'_ [&'_ str] = const_join!(&'_ str, SHARED_KEYWORDS,
-// SDL_KEYWORDS_ONLY);
 
 const DDL_KEYWORDS: &'_ [&'_ str] = &[
   "after", "alter", "before", "create", "drop", "first", "last",
 ];
-// const DDL_KEYWORDS: &'_ [&'_ str] = const_join!(&'_ str, SDL_KEYWORDS,
-// DDL_KEYWORDS_ONLY);
+// );
 
 const RESERVED_KEYWORDS: &'_ [&'_ str] = &[
   // Other (requires more understanding of the grammar)
@@ -271,7 +265,7 @@ const RESERVED_KEYWORDS: &'_ [&'_ str] = &[
 ];
 
 pub const KINDS: AstKinds<'_> = AstKinds {
-  punct: PUNCTUATION,
+  punctuation: PUNCTUATION,
   literals: LITERALS,
   tokens: TOKENS,
   nodes: NODES,
@@ -450,12 +444,50 @@ pub struct AstEnumSrc {
 
 #[cfg(test)]
 mod tests {
+  use anyhow::Result;
+  use heck::ToShoutySnakeCase;
+  use quote::quote;
+
   use crate::codegen::generate_ast::load_ast;
+  use crate::codegen::update;
+  use crate::codegen::Mode;
+  use crate::format_files;
+  use crate::project_root;
 
   #[ignore]
   #[test]
-  fn generate_nodes() {
-    let ast = load_ast();
-    assert_eq!(4, 4);
+  fn generate_nodes() -> Result<()> {
+    let ast = load_ast()?;
+    let mut names: Vec<_> = vec![];
+
+    for node in ast.nodes.iter() {
+      names.push(node.name.to_shouty_snake_case());
+    }
+
+    for union in ast.unions.iter() {
+      names.push(union.name.to_shouty_snake_case());
+    }
+
+    for list in ast.lists.values() {
+      names.push(list.element_name.to_shouty_snake_case());
+    }
+
+    for unknown in ast.unknowns.iter() {
+      names.push(unknown.to_shouty_snake_case());
+    }
+
+    let ident = quote! {
+      pub(crate) const NODES: &'_ [&'_ str] = &[
+        #(#names),*
+      ];
+    };
+
+    let mode = Mode::Overwrite;
+    let nodes_file = project_root().join("xtask/src/codegen/nodes.rs");
+    let contents = ident.to_string();
+    update(nodes_file.as_path(), &contents, &mode)?;
+    format_files(vec![nodes_file.to_string_lossy().into()])?;
+
+    Ok(())
   }
 }

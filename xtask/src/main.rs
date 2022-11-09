@@ -5,6 +5,7 @@ use std::process;
 use anyhow::Result;
 use clap::Parser;
 use xtask::codegen;
+use xtask::format_files;
 use xtask::symlink_root;
 use xtask::Bin;
 
@@ -55,13 +56,8 @@ fn main() -> Result<()> {
 
   match options.cmd {
     Command::Codegen => {
-      codegen::generate_ast()?;
-      process::Command::new("cargo")
-        .stdout(process::Stdio::inherit())
-        .stderr(process::Stdio::inherit())
-        .stdin(process::Stdio::inherit())
-        .arg("fix:format")
-        .output()?;
+      let files = codegen::generate_ast()?;
+      format_files(files)?;
     }
 
     Command::Setup => {

@@ -1,3 +1,5 @@
+// Generated file, do not edit by hand, see `xtask/src/codegen`
+
 #![allow(clippy::enum_variant_names)]
 #![allow(clippy::match_like_matches_macro)]
 use std::fmt::Debug;

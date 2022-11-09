@@ -7,6 +7,7 @@ use quote::quote;
 
 use crate::utils::fs2;
 
+const PREAMBLE: &str = "// Generated file, do not edit by hand, see `xtask/src/codegen`";
 const SYNTAX_KINDS: &str = "crates/eql_syntax/src/generated/kind.rs";
 const AST_NODES: &str = "crates/eql_syntax/src/generated/nodes.rs";
 const AST_NODES_MUT: &str = "crates/eql_syntax/src/generated/nodes_mut.rs";
@@ -66,6 +67,8 @@ impl SharedQuotes {
 /// A helper to update file on disk if it has changed.
 /// With verify = false,
 pub fn update(path: &Path, contents: &str, mode: &Mode) -> Result<UpdateResult> {
+  let contents = format!("{}\n\n{}\n", PREAMBLE, contents);
+
   match fs2::read_to_string(path) {
     Ok(old_contents) if old_contents == contents => {
       return Ok(UpdateResult::NotUpdated);

@@ -1,3 +1,5 @@
+// Generated file, do not edit by hand, see `xtask/src/codegen`
+
 #[doc = r" Reconstruct an AstNode from a SyntaxNode"]
 #[doc = r""]
 #[doc = r" This macros performs a match over the [kind](rome_rowan::SyntaxNode::kind)"]

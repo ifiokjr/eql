@@ -1,3 +1,5 @@
+// Generated file, do not edit by hand, see `xtask/src/codegen`
+
 use eql_syntax::EqlSyntaxKind;
 use eql_syntax::EqlSyntaxKind::*;
 use eql_syntax::T;

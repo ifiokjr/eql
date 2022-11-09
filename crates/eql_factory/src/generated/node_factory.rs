@@ -1,3 +1,5 @@
+// Generated file, do not edit by hand, see `xtask/src/codegen`
+
 #![allow(clippy::redundant_closure)]
 #![allow(clippy::too_many_arguments)]
 use eql_syntax::EqlSyntaxElement as SyntaxElement;

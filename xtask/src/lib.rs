@@ -1,8 +1,10 @@
 use std::env;
 use std::path::Path;
 use std::path::PathBuf;
+use std::process;
 use std::process::Command;
 
+use anyhow::Result;
 pub use bin::Bin;
 pub use symlink_root::symlink_root;
 
@@ -23,6 +25,18 @@ pub fn project_root() -> PathBuf {
   .nth(1)
   .unwrap()
   .to_path_buf()
+}
+
+pub fn format_files(files: Vec<String>) -> Result<()> {
+  process::Command::new("cargo")
+    .stdout(process::Stdio::inherit())
+    .stderr(process::Stdio::inherit())
+    .stdin(process::Stdio::inherit())
+    .arg("fix:format")
+    .args(files)
+    .output()?;
+
+  Ok(())
 }
 
 mod bin;

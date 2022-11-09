@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::fmt::Write;
-use std::str::FromStr;
 use std::vec;
 
 use anyhow::Result;
@@ -41,24 +40,26 @@ use crate::project_root;
 // these node won't generate any code
 pub const SYNTAX_ELEMENT_TYPE: &str = "SyntaxElement";
 
-pub fn generate_ast() -> Result<()> {
-  let mut ast = load_ast();
+pub fn generate_ast() -> Result<Vec<String>> {
+  let mut ast = load_ast()?;
   ast.sort();
-  generate_syntax(ast)?;
-
-  Ok(())
+  generate_syntax(ast)
 }
 
-pub(crate) fn load_ast() -> AstSrc {
+pub(crate) fn load_grammar() -> Result<Grammar> {
   let grammar_src = include_str!("./edgedb.ungram");
-  let grammar: Grammar = grammar_src.parse().unwrap();
-  let ast: AstSrc = make_ast(&grammar);
+  Ok(grammar_src.parse()?)
+}
+
+pub(crate) fn load_ast() -> Result<AstSrc> {
+  let grammar = load_grammar()?;
+  let ast = make_ast(&grammar);
   check_unions(&ast.unions);
 
-  ast
+  Ok(ast)
 }
 
-fn generate_syntax(ast: AstSrc) -> Result<()> {
+fn generate_syntax(ast: AstSrc) -> Result<Vec<String>> {
   let mode = Mode::Overwrite;
 
   let ast_nodes_file = project_root().join(AST_NODES);
@@ -85,7 +86,16 @@ fn generate_syntax(ast: AstSrc) -> Result<()> {
   let contents = generate_macros(&ast)?;
   update(ast_macros_file.as_path(), &contents, &mode)?;
 
-  Ok(())
+  let files = vec![
+    ast_nodes_file.to_string_lossy().into(),
+    ast_nodes_mut_file.to_string_lossy().into(),
+    syntax_kinds_file.to_string_lossy().into(),
+    syntax_factory_file.to_string_lossy().into(),
+    node_factory_file.to_string_lossy().into(),
+    ast_macros_file.to_string_lossy().into(),
+  ];
+
+  Ok(files)
 }
 
 fn check_unions(unions: &[AstEnumSrc]) {

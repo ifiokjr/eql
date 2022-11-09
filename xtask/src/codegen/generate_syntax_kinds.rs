@@ -12,7 +12,7 @@ use super::SharedQuotes;
 pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
   let shared_quotes = SharedQuotes {};
   let syntax_kind = shared_quotes.syntax_kind();
-  let punctuation_values = grammar.punct.iter().map(|(token, _name)| {
+  let punctuation_values = grammar.punctuation.iter().map(|(token, _name)| {
     // These tokens, when parsed to proc_macro2::TokenStream, generates a stream of
     // bytes that can't be recognized by [quote].
     // Hence, they need to be thread differently
@@ -27,10 +27,10 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
       quote! { #(#cs)* }
     }
   });
-  let punctuation_strings = grammar.punct.iter().map(|(token, _name)| token);
+  let punctuation_strings = grammar.punctuation.iter().map(|(token, _name)| token);
 
   let punctuation = grammar
-    .punct
+    .punctuation
     .iter()
     .map(|(_token, name)| format_ident!("{}", name))
     .collect::<Vec<_>>();
@@ -72,7 +72,7 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
     .collect::<Vec<_>>();
   let all_keyword_strings = all_keywords_values.iter().map(|name| name.to_string());
 
-  let all_reserved_keywords_values = grammar.keywords.to_vec();
+  let all_reserved_keywords_values = grammar.reserved_keywords.to_vec();
   let all_reserved_keywords_idents = all_reserved_keywords_values
     .iter()
     .map(|kw| format_ident!("{}", kw))
@@ -85,7 +85,7 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
     .iter()
     .map(|name| name.to_string());
 
-  let all_edgeql_keywords_values = grammar.keywords.to_vec();
+  let all_edgeql_keywords_values = grammar.edgeql_keywords.to_vec();
   let all_edgeql_keywords_idents = all_edgeql_keywords_values
     .iter()
     .map(|kw| format_ident!("{}", kw))
@@ -98,7 +98,7 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
     .iter()
     .map(|name| name.to_string());
 
-  let all_sdl_keywords_values = grammar.keywords.to_vec();
+  let all_sdl_keywords_values = grammar.sdl_keywords.to_vec();
   let all_sdl_keywords_idents = all_sdl_keywords_values
     .iter()
     .map(|kw| format_ident!("{}", kw))
@@ -109,7 +109,7 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
     .collect::<Vec<_>>();
   let all_sdl_keyword_strings = all_sdl_keywords_values.iter().map(|name| name.to_string());
 
-  let all_ddl_keywords_values = grammar.keywords.to_vec();
+  let all_ddl_keywords_values = grammar.ddl_keywords.to_vec();
   let all_ddl_keywords_idents = all_ddl_keywords_values
     .iter()
     .map(|kw| format_ident!("{}", kw))
