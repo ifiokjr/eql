@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use eql_syntax::EqlSyntaxKind;
 use eql_syntax::EqlSyntaxToken;
 use rome_rowan::TriviaPiece;
@@ -12,27 +10,14 @@ pub fn ident(text: &str) -> EqlSyntaxToken {
   EqlSyntaxToken::new_detached(EqlSyntaxKind::IDENT, text, [], [])
 }
 
-/// Create a new identifier token with no attached trivia
-pub fn jsx_ident(text: &str) -> EqlSyntaxToken {
-  EqlSyntaxToken::new_detached(EqlSyntaxKind::JSX_IDENT, text, [], [])
-}
-
 /// Create a new string literal token with no attached trivia
-pub fn js_string_literal(text: &str) -> EqlSyntaxToken {
+pub fn string_literal(text: &str) -> EqlSyntaxToken {
   EqlSyntaxToken::new_detached(
-    EqlSyntaxKind::JS_STRING_LITERAL,
+    EqlSyntaxKind::STRING_LITERAL,
     &format!("\"{text}\""),
     [],
     [],
   )
-}
-
-/// Create a new string literal token with no attached trivia
-pub fn js_number_literal<N>(text: N) -> EqlSyntaxToken
-where
-  N: Display + Copy,
-{
-  EqlSyntaxToken::new_detached(EqlSyntaxKind::JS_NUMBER_LITERAL, &text.to_string(), [], [])
 }
 
 /// Create a new token with the specified syntax kind and no attached trivia

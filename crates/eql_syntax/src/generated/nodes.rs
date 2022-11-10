@@ -16,7 +16,9 @@ use rome_rowan::SyntaxKindSet;
 use rome_rowan::SyntaxResult;
 #[cfg(feature = "serde")]
 use serde::ser::SerializeSeq;
+#[cfg(feature = "serde")]
 use serde::Serialize;
+#[cfg(feature = "serde")]
 use serde::Serializer;
 
 use crate::macros::map_syntax_node;
@@ -603,6 +605,44 @@ pub struct EmptyStatementFields {
   pub semicolon_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct EqlRoot {
+  pub(crate) syntax: SyntaxNode,
+}
+impl EqlRoot {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self { syntax }
+  }
+
+  pub fn as_fields(&self) -> EqlRootFields {
+    EqlRootFields {
+      eql_root_item_list: self.eql_root_item_list(),
+    }
+  }
+
+  pub fn eql_root_item_list(&self) -> EqlRootItemList {
+    support::list(&self.syntax, 0usize)
+  }
+}
+#[cfg(feature = "serde")]
+impl Serialize for EqlRoot {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    self.as_fields().serialize(serializer)
+  }
+}
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct EqlRootFields {
+  pub eql_root_item_list: EqlRootItemList,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Expression {
   pub(crate) syntax: SyntaxNode,
 }
@@ -619,11 +659,11 @@ impl Expression {
 
   pub fn as_fields(&self) -> ExpressionFields {
     ExpressionFields {
-      unknown: self.unknown(),
+      unknown_expression: self.unknown_expression(),
     }
   }
 
-  pub fn unknown(&self) -> SyntaxResult<Unknown> {
+  pub fn unknown_expression(&self) -> SyntaxResult<UnknownExpression> {
     support::required_node(&self.syntax, 0usize)
   }
 }
@@ -638,7 +678,7 @@ impl Serialize for Expression {
 }
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ExpressionFields {
-  pub unknown: SyntaxResult<Unknown>,
+  pub unknown_expression: SyntaxResult<UnknownExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct FloatLiteralExpression {
@@ -2179,6 +2219,44 @@ pub struct SdlPropertyFields {
   pub sdl_unknown: SyntaxResult<SdlUnknown>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct SdlRoot {
+  pub(crate) syntax: SyntaxNode,
+}
+impl SdlRoot {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self { syntax }
+  }
+
+  pub fn as_fields(&self) -> SdlRootFields {
+    SdlRootFields {
+      sdl_root_item_list: self.sdl_root_item_list(),
+    }
+  }
+
+  pub fn sdl_root_item_list(&self) -> SdlRootItemList {
+    support::list(&self.syntax, 0usize)
+  }
+}
+#[cfg(feature = "serde")]
+impl Serialize for SdlRoot {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    self.as_fields().serialize(serializer)
+  }
+}
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct SdlRootFields {
+  pub sdl_root_item_list: SdlRootItemList,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct SdlScalarBlock {
   pub(crate) syntax: SyntaxNode,
 }
@@ -2327,74 +2405,6 @@ impl Serialize for SdlScalarExtendingType {
 pub struct SdlScalarExtendingTypeFields {
   pub extending_token: SyntaxResult<SyntaxToken>,
   pub extends: SdlExtendingNames,
-}
-#[derive(Clone, PartialEq, Eq, Hash)]
-pub struct SdlScalarSchema {
-  pub(crate) syntax: SyntaxNode,
-}
-impl SdlScalarSchema {
-  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
-  #[doc = r""]
-  #[doc = r" # Safety"]
-  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
-  #[doc = r" or a match on [SyntaxNode::kind]"]
-  #[inline]
-  pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
-    Self { syntax }
-  }
-
-  pub fn as_fields(&self) -> SdlScalarSchemaFields {
-    SdlScalarSchemaFields {
-      abstract_token: self.abstract_token(),
-      scalar_token: self.scalar_token(),
-      type_token: self.type_token(),
-      name: self.name(),
-      extending: self.extending(),
-      body: self.body(),
-    }
-  }
-
-  pub fn abstract_token(&self) -> Option<SyntaxToken> {
-    support::token(&self.syntax, 0usize)
-  }
-
-  pub fn scalar_token(&self) -> SyntaxResult<SyntaxToken> {
-    support::required_token(&self.syntax, 1usize)
-  }
-
-  pub fn type_token(&self) -> SyntaxResult<SyntaxToken> {
-    support::required_token(&self.syntax, 2usize)
-  }
-
-  pub fn name(&self) -> SyntaxResult<Name> {
-    support::required_node(&self.syntax, 3usize)
-  }
-
-  pub fn extending(&self) -> Option<SdlScalarExtending> {
-    support::node(&self.syntax, 4usize)
-  }
-
-  pub fn body(&self) -> SyntaxResult<SdlScalarBody> {
-    support::required_node(&self.syntax, 5usize)
-  }
-}
-#[cfg(feature = "serde")]
-impl Serialize for SdlScalarSchema {
-  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-  where
-    S: Serializer,
-  {
-    self.as_fields().serialize(serializer)
-  }
-}
-#[cfg_attr(feature = "serde", derive(Serialize))]
-pub struct SdlScalarSchemaFields {
-  pub abstract_token: Option<SyntaxToken>,
-  pub scalar_token: SyntaxResult<SyntaxToken>,
-  pub type_token: SyntaxResult<SyntaxToken>,
-  pub name: SyntaxResult<Name>,
-  pub extending: Option<SdlScalarExtending>,
-  pub body: SyntaxResult<SdlScalarBody>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct SdlSchemaConstrainParam {
@@ -2639,6 +2649,74 @@ pub struct SdlSchemaConstraintBlockFields {
   pub semicolon_token: Option<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct SdlSchemaScalar {
+  pub(crate) syntax: SyntaxNode,
+}
+impl SdlSchemaScalar {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self { syntax }
+  }
+
+  pub fn as_fields(&self) -> SdlSchemaScalarFields {
+    SdlSchemaScalarFields {
+      abstract_token: self.abstract_token(),
+      scalar_token: self.scalar_token(),
+      type_token: self.type_token(),
+      name: self.name(),
+      extending: self.extending(),
+      body: self.body(),
+    }
+  }
+
+  pub fn abstract_token(&self) -> Option<SyntaxToken> {
+    support::token(&self.syntax, 0usize)
+  }
+
+  pub fn scalar_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 1usize)
+  }
+
+  pub fn type_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 2usize)
+  }
+
+  pub fn name(&self) -> SyntaxResult<Name> {
+    support::required_node(&self.syntax, 3usize)
+  }
+
+  pub fn extending(&self) -> Option<SdlScalarExtending> {
+    support::node(&self.syntax, 4usize)
+  }
+
+  pub fn body(&self) -> SyntaxResult<SdlScalarBody> {
+    support::required_node(&self.syntax, 5usize)
+  }
+}
+#[cfg(feature = "serde")]
+impl Serialize for SdlSchemaScalar {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    self.as_fields().serialize(serializer)
+  }
+}
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct SdlSchemaScalarFields {
+  pub abstract_token: Option<SyntaxToken>,
+  pub scalar_token: SyntaxResult<SyntaxToken>,
+  pub type_token: SyntaxResult<SyntaxToken>,
+  pub name: SyntaxResult<Name>,
+  pub extending: Option<SdlScalarExtending>,
+  pub body: SyntaxResult<SdlScalarBody>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct SequenceType {
   pub(crate) syntax: SyntaxNode,
 }
@@ -2675,6 +2753,44 @@ impl Serialize for SequenceType {
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct SequenceTypeFields {
   pub sequence_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct Statement {
+  pub(crate) syntax: SyntaxNode,
+}
+impl Statement {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self { syntax }
+  }
+
+  pub fn as_fields(&self) -> StatementFields {
+    StatementFields {
+      unknown_statement: self.unknown_statement(),
+    }
+  }
+
+  pub fn unknown_statement(&self) -> SyntaxResult<UnknownStatement> {
+    support::required_node(&self.syntax, 0usize)
+  }
+}
+#[cfg(feature = "serde")]
+impl Serialize for Statement {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    self.as_fields().serialize(serializer)
+  }
+}
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct StatementFields {
+  pub unknown_statement: SyntaxResult<UnknownStatement>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct StringType {
@@ -2965,6 +3081,72 @@ impl AnyLiteralExpression {
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
+pub enum AnyRoot {
+  EqlRoot(EqlRoot),
+  SdlRoot(SdlRoot),
+}
+impl AnyRoot {
+  pub fn as_eql_root(&self) -> Option<&EqlRoot> {
+    match &self {
+      AnyRoot::EqlRoot(item) => Some(item),
+      _ => None,
+    }
+  }
+
+  pub fn as_sdl_root(&self) -> Option<&SdlRoot> {
+    match &self {
+      AnyRoot::SdlRoot(item) => Some(item),
+      _ => None,
+    }
+  }
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub enum AnyUnknown {
+  SdlUnknown(SdlUnknown),
+  SdlUnknownExpression(SdlUnknownExpression),
+  SdlUnknownSchema(SdlUnknownSchema),
+  UnknownExpression(UnknownExpression),
+  UnknownStatement(UnknownStatement),
+}
+impl AnyUnknown {
+  pub fn as_sdl_unknown(&self) -> Option<&SdlUnknown> {
+    match &self {
+      AnyUnknown::SdlUnknown(item) => Some(item),
+      _ => None,
+    }
+  }
+
+  pub fn as_sdl_unknown_expression(&self) -> Option<&SdlUnknownExpression> {
+    match &self {
+      AnyUnknown::SdlUnknownExpression(item) => Some(item),
+      _ => None,
+    }
+  }
+
+  pub fn as_sdl_unknown_schema(&self) -> Option<&SdlUnknownSchema> {
+    match &self {
+      AnyUnknown::SdlUnknownSchema(item) => Some(item),
+      _ => None,
+    }
+  }
+
+  pub fn as_unknown_expression(&self) -> Option<&UnknownExpression> {
+    match &self {
+      AnyUnknown::UnknownExpression(item) => Some(item),
+      _ => None,
+    }
+  }
+
+  pub fn as_unknown_statement(&self) -> Option<&UnknownStatement> {
+    match &self {
+      AnyUnknown::UnknownStatement(item) => Some(item),
+      _ => None,
+    }
+  }
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum BytesLiteralExpression {
   BareBytesLiteralExpression(BareBytesLiteralExpression),
   RawBytesLiteralExpression(RawBytesLiteralExpression),
@@ -2980,6 +3162,35 @@ impl BytesLiteralExpression {
   pub fn as_raw_bytes_literal_expression(&self) -> Option<&RawBytesLiteralExpression> {
     match &self {
       BytesLiteralExpression::RawBytesLiteralExpression(item) => Some(item),
+      _ => None,
+    }
+  }
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub enum EqlRootItem {
+  AnyLiteralExpression(AnyLiteralExpression),
+  Expression(Expression),
+  Statement(Statement),
+}
+impl EqlRootItem {
+  pub fn as_any_literal_expression(&self) -> Option<&AnyLiteralExpression> {
+    match &self {
+      EqlRootItem::AnyLiteralExpression(item) => Some(item),
+      _ => None,
+    }
+  }
+
+  pub fn as_expression(&self) -> Option<&Expression> {
+    match &self {
+      EqlRootItem::Expression(item) => Some(item),
+      _ => None,
+    }
+  }
+
+  pub fn as_statement(&self) -> Option<&Statement> {
+    match &self {
+      EqlRootItem::Statement(item) => Some(item),
       _ => None,
     }
   }
@@ -3256,6 +3467,27 @@ impl SdlObjectBody {
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
+pub enum SdlRootItem {
+  SdlModule(SdlModule),
+  SdlSchema(SdlSchema),
+}
+impl SdlRootItem {
+  pub fn as_sdl_module(&self) -> Option<&SdlModule> {
+    match &self {
+      SdlRootItem::SdlModule(item) => Some(item),
+      _ => None,
+    }
+  }
+
+  pub fn as_sdl_schema(&self) -> Option<&SdlSchema> {
+    match &self {
+      SdlRootItem::SdlSchema(item) => Some(item),
+      _ => None,
+    }
+  }
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum SdlScalarBody {
   EmptyStatement(EmptyStatement),
   SdlScalarBlock(SdlScalarBlock),
@@ -3302,6 +3534,8 @@ pub enum SdlSchema {
   EmptyStatement(EmptyStatement),
   SdlAnnotationSchema(SdlAnnotationSchema),
   SdlObjectSchema(SdlObjectSchema),
+  SdlSchemaConstraint(SdlSchemaConstraint),
+  SdlSchemaScalar(SdlSchemaScalar),
 }
 impl SdlSchema {
   pub fn as_empty_statement(&self) -> Option<&EmptyStatement> {
@@ -3321,6 +3555,20 @@ impl SdlSchema {
   pub fn as_sdl_object_schema(&self) -> Option<&SdlObjectSchema> {
     match &self {
       SdlSchema::SdlObjectSchema(item) => Some(item),
+      _ => None,
+    }
+  }
+
+  pub fn as_sdl_schema_constraint(&self) -> Option<&SdlSchemaConstraint> {
+    match &self {
+      SdlSchema::SdlSchemaConstraint(item) => Some(item),
+      _ => None,
+    }
+  }
+
+  pub fn as_sdl_schema_scalar(&self) -> Option<&SdlSchemaScalar> {
+    match &self {
+      SdlSchema::SdlSchemaScalar(item) => Some(item),
       _ => None,
     }
   }
@@ -4081,6 +4329,48 @@ impl From<EmptyStatement> for SyntaxElement {
     n.syntax.into()
   }
 }
+impl AstNode for EqlRoot {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> = SyntaxKindSet::from_raw(RawSyntaxKind(EQL_ROOT as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == EQL_ROOT
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    if Self::can_cast(syntax.kind()) {
+      Some(Self { syntax })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    &self.syntax
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax
+  }
+}
+impl std::fmt::Debug for EqlRoot {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("EqlRoot")
+      .field("eql_root_item_list", &self.eql_root_item_list())
+      .finish()
+  }
+}
+impl From<EqlRoot> for SyntaxNode {
+  fn from(n: EqlRoot) -> SyntaxNode {
+    n.syntax
+  }
+}
+impl From<EqlRoot> for SyntaxElement {
+  fn from(n: EqlRoot) -> SyntaxElement {
+    n.syntax.into()
+  }
+}
 impl AstNode for Expression {
   type Language = Language;
 
@@ -4110,7 +4400,10 @@ impl AstNode for Expression {
 impl std::fmt::Debug for Expression {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("Expression")
-      .field("unknown", &support::DebugSyntaxResult(self.unknown()))
+      .field(
+        "unknown_expression",
+        &support::DebugSyntaxResult(self.unknown_expression()),
+      )
       .finish()
   }
 }
@@ -5672,6 +5965,48 @@ impl From<SdlProperty> for SyntaxElement {
     n.syntax.into()
   }
 }
+impl AstNode for SdlRoot {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> = SyntaxKindSet::from_raw(RawSyntaxKind(SDL_ROOT as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == SDL_ROOT
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    if Self::can_cast(syntax.kind()) {
+      Some(Self { syntax })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    &self.syntax
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax
+  }
+}
+impl std::fmt::Debug for SdlRoot {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("SdlRoot")
+      .field("sdl_root_item_list", &self.sdl_root_item_list())
+      .finish()
+  }
+}
+impl From<SdlRoot> for SyntaxNode {
+  fn from(n: SdlRoot) -> SyntaxNode {
+    n.syntax
+  }
+}
+impl From<SdlRoot> for SyntaxElement {
+  fn from(n: SdlRoot) -> SyntaxElement {
+    n.syntax.into()
+  }
+}
 impl AstNode for SdlScalarBlock {
   type Language = Language;
 
@@ -5819,63 +6154,6 @@ impl From<SdlScalarExtendingType> for SyntaxNode {
 }
 impl From<SdlScalarExtendingType> for SyntaxElement {
   fn from(n: SdlScalarExtendingType) -> SyntaxElement {
-    n.syntax.into()
-  }
-}
-impl AstNode for SdlScalarSchema {
-  type Language = Language;
-
-  const KIND_SET: SyntaxKindSet<Language> =
-    SyntaxKindSet::from_raw(RawSyntaxKind(SDL_SCALAR_SCHEMA as u16));
-
-  fn can_cast(kind: SyntaxKind) -> bool {
-    kind == SDL_SCALAR_SCHEMA
-  }
-
-  fn cast(syntax: SyntaxNode) -> Option<Self> {
-    if Self::can_cast(syntax.kind()) {
-      Some(Self { syntax })
-    } else {
-      None
-    }
-  }
-
-  fn syntax(&self) -> &SyntaxNode {
-    &self.syntax
-  }
-
-  fn into_syntax(self) -> SyntaxNode {
-    self.syntax
-  }
-}
-impl std::fmt::Debug for SdlScalarSchema {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    f.debug_struct("SdlScalarSchema")
-      .field(
-        "abstract_token",
-        &support::DebugOptionalElement(self.abstract_token()),
-      )
-      .field(
-        "scalar_token",
-        &support::DebugSyntaxResult(self.scalar_token()),
-      )
-      .field("type_token", &support::DebugSyntaxResult(self.type_token()))
-      .field("name", &support::DebugSyntaxResult(self.name()))
-      .field(
-        "extending",
-        &support::DebugOptionalElement(self.extending()),
-      )
-      .field("body", &support::DebugSyntaxResult(self.body()))
-      .finish()
-  }
-}
-impl From<SdlScalarSchema> for SyntaxNode {
-  fn from(n: SdlScalarSchema) -> SyntaxNode {
-    n.syntax
-  }
-}
-impl From<SdlScalarSchema> for SyntaxElement {
-  fn from(n: SdlScalarSchema) -> SyntaxElement {
     n.syntax.into()
   }
 }
@@ -6093,6 +6371,63 @@ impl From<SdlSchemaConstraintBlock> for SyntaxElement {
     n.syntax.into()
   }
 }
+impl AstNode for SdlSchemaScalar {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> =
+    SyntaxKindSet::from_raw(RawSyntaxKind(SDL_SCHEMA_SCALAR as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == SDL_SCHEMA_SCALAR
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    if Self::can_cast(syntax.kind()) {
+      Some(Self { syntax })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    &self.syntax
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax
+  }
+}
+impl std::fmt::Debug for SdlSchemaScalar {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("SdlSchemaScalar")
+      .field(
+        "abstract_token",
+        &support::DebugOptionalElement(self.abstract_token()),
+      )
+      .field(
+        "scalar_token",
+        &support::DebugSyntaxResult(self.scalar_token()),
+      )
+      .field("type_token", &support::DebugSyntaxResult(self.type_token()))
+      .field("name", &support::DebugSyntaxResult(self.name()))
+      .field(
+        "extending",
+        &support::DebugOptionalElement(self.extending()),
+      )
+      .field("body", &support::DebugSyntaxResult(self.body()))
+      .finish()
+  }
+}
+impl From<SdlSchemaScalar> for SyntaxNode {
+  fn from(n: SdlSchemaScalar) -> SyntaxNode {
+    n.syntax
+  }
+}
+impl From<SdlSchemaScalar> for SyntaxElement {
+  fn from(n: SdlSchemaScalar) -> SyntaxElement {
+    n.syntax.into()
+  }
+}
 impl AstNode for SequenceType {
   type Language = Language;
 
@@ -6136,6 +6471,52 @@ impl From<SequenceType> for SyntaxNode {
 }
 impl From<SequenceType> for SyntaxElement {
   fn from(n: SequenceType) -> SyntaxElement {
+    n.syntax.into()
+  }
+}
+impl AstNode for Statement {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> =
+    SyntaxKindSet::from_raw(RawSyntaxKind(STATEMENT as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == STATEMENT
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    if Self::can_cast(syntax.kind()) {
+      Some(Self { syntax })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    &self.syntax
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax
+  }
+}
+impl std::fmt::Debug for Statement {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("Statement")
+      .field(
+        "unknown_statement",
+        &support::DebugSyntaxResult(self.unknown_statement()),
+      )
+      .finish()
+  }
+}
+impl From<Statement> for SyntaxNode {
+  fn from(n: Statement) -> SyntaxNode {
+    n.syntax
+  }
+}
+impl From<Statement> for SyntaxElement {
+  fn from(n: Statement) -> SyntaxElement {
     n.syntax.into()
   }
 }
@@ -6508,6 +6889,175 @@ impl From<AnyLiteralExpression> for SyntaxElement {
     node.into()
   }
 }
+impl From<EqlRoot> for AnyRoot {
+  fn from(node: EqlRoot) -> AnyRoot {
+    AnyRoot::EqlRoot(node)
+  }
+}
+impl From<SdlRoot> for AnyRoot {
+  fn from(node: SdlRoot) -> AnyRoot {
+    AnyRoot::SdlRoot(node)
+  }
+}
+impl AstNode for AnyRoot {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> = EqlRoot::KIND_SET.union(SdlRoot::KIND_SET);
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    matches!(kind, EQL_ROOT | SDL_ROOT)
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    let res = match syntax.kind() {
+      EQL_ROOT => AnyRoot::EqlRoot(EqlRoot { syntax }),
+      SDL_ROOT => AnyRoot::SdlRoot(SdlRoot { syntax }),
+      _ => return None,
+    };
+    Some(res)
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    match self {
+      AnyRoot::EqlRoot(it) => &it.syntax,
+      AnyRoot::SdlRoot(it) => &it.syntax,
+    }
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    match self {
+      AnyRoot::EqlRoot(it) => it.syntax,
+      AnyRoot::SdlRoot(it) => it.syntax,
+    }
+  }
+}
+impl std::fmt::Debug for AnyRoot {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      AnyRoot::EqlRoot(it) => std::fmt::Debug::fmt(it, f),
+      AnyRoot::SdlRoot(it) => std::fmt::Debug::fmt(it, f),
+    }
+  }
+}
+impl From<AnyRoot> for SyntaxNode {
+  fn from(n: AnyRoot) -> SyntaxNode {
+    match n {
+      AnyRoot::EqlRoot(it) => it.into(),
+      AnyRoot::SdlRoot(it) => it.into(),
+    }
+  }
+}
+impl From<AnyRoot> for SyntaxElement {
+  fn from(n: AnyRoot) -> SyntaxElement {
+    let node: SyntaxNode = n.into();
+    node.into()
+  }
+}
+impl From<SdlUnknown> for AnyUnknown {
+  fn from(node: SdlUnknown) -> AnyUnknown {
+    AnyUnknown::SdlUnknown(node)
+  }
+}
+impl From<SdlUnknownExpression> for AnyUnknown {
+  fn from(node: SdlUnknownExpression) -> AnyUnknown {
+    AnyUnknown::SdlUnknownExpression(node)
+  }
+}
+impl From<SdlUnknownSchema> for AnyUnknown {
+  fn from(node: SdlUnknownSchema) -> AnyUnknown {
+    AnyUnknown::SdlUnknownSchema(node)
+  }
+}
+impl From<UnknownExpression> for AnyUnknown {
+  fn from(node: UnknownExpression) -> AnyUnknown {
+    AnyUnknown::UnknownExpression(node)
+  }
+}
+impl From<UnknownStatement> for AnyUnknown {
+  fn from(node: UnknownStatement) -> AnyUnknown {
+    AnyUnknown::UnknownStatement(node)
+  }
+}
+impl AstNode for AnyUnknown {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> = SdlUnknown::KIND_SET
+    .union(SdlUnknownExpression::KIND_SET)
+    .union(SdlUnknownSchema::KIND_SET)
+    .union(UnknownExpression::KIND_SET)
+    .union(UnknownStatement::KIND_SET);
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    matches!(
+      kind,
+      SDL_UNKNOWN
+        | SDL_UNKNOWN_EXPRESSION
+        | SDL_UNKNOWN_SCHEMA
+        | UNKNOWN_EXPRESSION
+        | UNKNOWN_STATEMENT
+    )
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    let res = match syntax.kind() {
+      SDL_UNKNOWN => AnyUnknown::SdlUnknown(SdlUnknown { syntax }),
+      SDL_UNKNOWN_EXPRESSION => AnyUnknown::SdlUnknownExpression(SdlUnknownExpression { syntax }),
+      SDL_UNKNOWN_SCHEMA => AnyUnknown::SdlUnknownSchema(SdlUnknownSchema { syntax }),
+      UNKNOWN_EXPRESSION => AnyUnknown::UnknownExpression(UnknownExpression { syntax }),
+      UNKNOWN_STATEMENT => AnyUnknown::UnknownStatement(UnknownStatement { syntax }),
+      _ => return None,
+    };
+    Some(res)
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    match self {
+      AnyUnknown::SdlUnknown(it) => &it.syntax,
+      AnyUnknown::SdlUnknownExpression(it) => &it.syntax,
+      AnyUnknown::SdlUnknownSchema(it) => &it.syntax,
+      AnyUnknown::UnknownExpression(it) => &it.syntax,
+      AnyUnknown::UnknownStatement(it) => &it.syntax,
+    }
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    match self {
+      AnyUnknown::SdlUnknown(it) => it.syntax,
+      AnyUnknown::SdlUnknownExpression(it) => it.syntax,
+      AnyUnknown::SdlUnknownSchema(it) => it.syntax,
+      AnyUnknown::UnknownExpression(it) => it.syntax,
+      AnyUnknown::UnknownStatement(it) => it.syntax,
+    }
+  }
+}
+impl std::fmt::Debug for AnyUnknown {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      AnyUnknown::SdlUnknown(it) => std::fmt::Debug::fmt(it, f),
+      AnyUnknown::SdlUnknownExpression(it) => std::fmt::Debug::fmt(it, f),
+      AnyUnknown::SdlUnknownSchema(it) => std::fmt::Debug::fmt(it, f),
+      AnyUnknown::UnknownExpression(it) => std::fmt::Debug::fmt(it, f),
+      AnyUnknown::UnknownStatement(it) => std::fmt::Debug::fmt(it, f),
+    }
+  }
+}
+impl From<AnyUnknown> for SyntaxNode {
+  fn from(n: AnyUnknown) -> SyntaxNode {
+    match n {
+      AnyUnknown::SdlUnknown(it) => it.into(),
+      AnyUnknown::SdlUnknownExpression(it) => it.into(),
+      AnyUnknown::SdlUnknownSchema(it) => it.into(),
+      AnyUnknown::UnknownExpression(it) => it.into(),
+      AnyUnknown::UnknownStatement(it) => it.into(),
+    }
+  }
+}
+impl From<AnyUnknown> for SyntaxElement {
+  fn from(n: AnyUnknown) -> SyntaxElement {
+    let node: SyntaxNode = n.into();
+    node.into()
+  }
+}
 impl From<BareBytesLiteralExpression> for BytesLiteralExpression {
   fn from(node: BareBytesLiteralExpression) -> BytesLiteralExpression {
     BytesLiteralExpression::BareBytesLiteralExpression(node)
@@ -6576,6 +7126,85 @@ impl From<BytesLiteralExpression> for SyntaxNode {
 }
 impl From<BytesLiteralExpression> for SyntaxElement {
   fn from(n: BytesLiteralExpression) -> SyntaxElement {
+    let node: SyntaxNode = n.into();
+    node.into()
+  }
+}
+impl From<Expression> for EqlRootItem {
+  fn from(node: Expression) -> EqlRootItem {
+    EqlRootItem::Expression(node)
+  }
+}
+impl From<Statement> for EqlRootItem {
+  fn from(node: Statement) -> EqlRootItem {
+    EqlRootItem::Statement(node)
+  }
+}
+impl AstNode for EqlRootItem {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> = AnyLiteralExpression::KIND_SET
+    .union(Expression::KIND_SET)
+    .union(Statement::KIND_SET);
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    match kind {
+      EXPRESSION | STATEMENT => true,
+      k if AnyLiteralExpression::can_cast(k) => true,
+      _ => false,
+    }
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    let res = match syntax.kind() {
+      EXPRESSION => EqlRootItem::Expression(Expression { syntax }),
+      STATEMENT => EqlRootItem::Statement(Statement { syntax }),
+      _ => {
+        if let Some(any_literal_expression) = AnyLiteralExpression::cast(syntax) {
+          return Some(EqlRootItem::AnyLiteralExpression(any_literal_expression));
+        }
+        return None;
+      }
+    };
+    Some(res)
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    match self {
+      EqlRootItem::Expression(it) => &it.syntax,
+      EqlRootItem::Statement(it) => &it.syntax,
+      EqlRootItem::AnyLiteralExpression(it) => it.syntax(),
+    }
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    match self {
+      EqlRootItem::Expression(it) => it.syntax,
+      EqlRootItem::Statement(it) => it.syntax,
+      EqlRootItem::AnyLiteralExpression(it) => it.into_syntax(),
+    }
+  }
+}
+impl std::fmt::Debug for EqlRootItem {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      EqlRootItem::AnyLiteralExpression(it) => std::fmt::Debug::fmt(it, f),
+      EqlRootItem::Expression(it) => std::fmt::Debug::fmt(it, f),
+      EqlRootItem::Statement(it) => std::fmt::Debug::fmt(it, f),
+    }
+  }
+}
+impl From<EqlRootItem> for SyntaxNode {
+  fn from(n: EqlRootItem) -> SyntaxNode {
+    match n {
+      EqlRootItem::AnyLiteralExpression(it) => it.into(),
+      EqlRootItem::Expression(it) => it.into(),
+      EqlRootItem::Statement(it) => it.into(),
+    }
+  }
+}
+impl From<EqlRootItem> for SyntaxElement {
+  fn from(n: EqlRootItem) -> SyntaxElement {
     let node: SyntaxNode = n.into();
     node.into()
   }
@@ -7196,6 +7825,73 @@ impl From<SdlObjectBody> for SyntaxElement {
     node.into()
   }
 }
+impl From<SdlModule> for SdlRootItem {
+  fn from(node: SdlModule) -> SdlRootItem {
+    SdlRootItem::SdlModule(node)
+  }
+}
+impl AstNode for SdlRootItem {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> = SdlModule::KIND_SET.union(SdlSchema::KIND_SET);
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    match kind {
+      SDL_MODULE => true,
+      k if SdlSchema::can_cast(k) => true,
+      _ => false,
+    }
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    let res = match syntax.kind() {
+      SDL_MODULE => SdlRootItem::SdlModule(SdlModule { syntax }),
+      _ => {
+        if let Some(sdl_schema) = SdlSchema::cast(syntax) {
+          return Some(SdlRootItem::SdlSchema(sdl_schema));
+        }
+        return None;
+      }
+    };
+    Some(res)
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    match self {
+      SdlRootItem::SdlModule(it) => &it.syntax,
+      SdlRootItem::SdlSchema(it) => it.syntax(),
+    }
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    match self {
+      SdlRootItem::SdlModule(it) => it.syntax,
+      SdlRootItem::SdlSchema(it) => it.into_syntax(),
+    }
+  }
+}
+impl std::fmt::Debug for SdlRootItem {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      SdlRootItem::SdlModule(it) => std::fmt::Debug::fmt(it, f),
+      SdlRootItem::SdlSchema(it) => std::fmt::Debug::fmt(it, f),
+    }
+  }
+}
+impl From<SdlRootItem> for SyntaxNode {
+  fn from(n: SdlRootItem) -> SyntaxNode {
+    match n {
+      SdlRootItem::SdlModule(it) => it.into(),
+      SdlRootItem::SdlSchema(it) => it.into(),
+    }
+  }
+}
+impl From<SdlRootItem> for SyntaxElement {
+  fn from(n: SdlRootItem) -> SyntaxElement {
+    let node: SyntaxNode = n.into();
+    node.into()
+  }
+}
 impl From<EmptyStatement> for SdlScalarBody {
   fn from(node: EmptyStatement) -> SdlScalarBody {
     SdlScalarBody::EmptyStatement(node)
@@ -7345,17 +8041,33 @@ impl From<SdlObjectSchema> for SdlSchema {
     SdlSchema::SdlObjectSchema(node)
   }
 }
+impl From<SdlSchemaConstraint> for SdlSchema {
+  fn from(node: SdlSchemaConstraint) -> SdlSchema {
+    SdlSchema::SdlSchemaConstraint(node)
+  }
+}
+impl From<SdlSchemaScalar> for SdlSchema {
+  fn from(node: SdlSchemaScalar) -> SdlSchema {
+    SdlSchema::SdlSchemaScalar(node)
+  }
+}
 impl AstNode for SdlSchema {
   type Language = Language;
 
   const KIND_SET: SyntaxKindSet<Language> = EmptyStatement::KIND_SET
     .union(SdlAnnotationSchema::KIND_SET)
-    .union(SdlObjectSchema::KIND_SET);
+    .union(SdlObjectSchema::KIND_SET)
+    .union(SdlSchemaConstraint::KIND_SET)
+    .union(SdlSchemaScalar::KIND_SET);
 
   fn can_cast(kind: SyntaxKind) -> bool {
     matches!(
       kind,
-      EMPTY_STATEMENT | SDL_ANNOTATION_SCHEMA | SDL_OBJECT_SCHEMA
+      EMPTY_STATEMENT
+        | SDL_ANNOTATION_SCHEMA
+        | SDL_OBJECT_SCHEMA
+        | SDL_SCHEMA_CONSTRAINT
+        | SDL_SCHEMA_SCALAR
     )
   }
 
@@ -7364,6 +8076,8 @@ impl AstNode for SdlSchema {
       EMPTY_STATEMENT => SdlSchema::EmptyStatement(EmptyStatement { syntax }),
       SDL_ANNOTATION_SCHEMA => SdlSchema::SdlAnnotationSchema(SdlAnnotationSchema { syntax }),
       SDL_OBJECT_SCHEMA => SdlSchema::SdlObjectSchema(SdlObjectSchema { syntax }),
+      SDL_SCHEMA_CONSTRAINT => SdlSchema::SdlSchemaConstraint(SdlSchemaConstraint { syntax }),
+      SDL_SCHEMA_SCALAR => SdlSchema::SdlSchemaScalar(SdlSchemaScalar { syntax }),
       _ => return None,
     };
     Some(res)
@@ -7374,6 +8088,8 @@ impl AstNode for SdlSchema {
       SdlSchema::EmptyStatement(it) => &it.syntax,
       SdlSchema::SdlAnnotationSchema(it) => &it.syntax,
       SdlSchema::SdlObjectSchema(it) => &it.syntax,
+      SdlSchema::SdlSchemaConstraint(it) => &it.syntax,
+      SdlSchema::SdlSchemaScalar(it) => &it.syntax,
     }
   }
 
@@ -7382,6 +8098,8 @@ impl AstNode for SdlSchema {
       SdlSchema::EmptyStatement(it) => it.syntax,
       SdlSchema::SdlAnnotationSchema(it) => it.syntax,
       SdlSchema::SdlObjectSchema(it) => it.syntax,
+      SdlSchema::SdlSchemaConstraint(it) => it.syntax,
+      SdlSchema::SdlSchemaScalar(it) => it.syntax,
     }
   }
 }
@@ -7391,6 +8109,8 @@ impl std::fmt::Debug for SdlSchema {
       SdlSchema::EmptyStatement(it) => std::fmt::Debug::fmt(it, f),
       SdlSchema::SdlAnnotationSchema(it) => std::fmt::Debug::fmt(it, f),
       SdlSchema::SdlObjectSchema(it) => std::fmt::Debug::fmt(it, f),
+      SdlSchema::SdlSchemaConstraint(it) => std::fmt::Debug::fmt(it, f),
+      SdlSchema::SdlSchemaScalar(it) => std::fmt::Debug::fmt(it, f),
     }
   }
 }
@@ -7400,6 +8120,8 @@ impl From<SdlSchema> for SyntaxNode {
       SdlSchema::EmptyStatement(it) => it.into(),
       SdlSchema::SdlAnnotationSchema(it) => it.into(),
       SdlSchema::SdlObjectSchema(it) => it.into(),
+      SdlSchema::SdlSchemaConstraint(it) => it.into(),
+      SdlSchema::SdlSchemaScalar(it) => it.into(),
     }
   }
 }
@@ -7720,7 +8442,22 @@ impl std::fmt::Display for AnyLiteralExpression {
     std::fmt::Display::fmt(self.syntax(), f)
   }
 }
+impl std::fmt::Display for AnyRoot {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
+impl std::fmt::Display for AnyUnknown {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
 impl std::fmt::Display for BytesLiteralExpression {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
+impl std::fmt::Display for EqlRootItem {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
   }
@@ -7751,6 +8488,11 @@ impl std::fmt::Display for SdlConstraintBody {
   }
 }
 impl std::fmt::Display for SdlObjectBody {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
+impl std::fmt::Display for SdlRootItem {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
   }
@@ -7856,6 +8598,11 @@ impl std::fmt::Display for DurationType {
   }
 }
 impl std::fmt::Display for EmptyStatement {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
+impl std::fmt::Display for EqlRoot {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
   }
@@ -8020,6 +8767,11 @@ impl std::fmt::Display for SdlProperty {
     std::fmt::Display::fmt(self.syntax(), f)
   }
 }
+impl std::fmt::Display for SdlRoot {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
 impl std::fmt::Display for SdlScalarBlock {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
@@ -8031,11 +8783,6 @@ impl std::fmt::Display for SdlScalarExtendingEnum {
   }
 }
 impl std::fmt::Display for SdlScalarExtendingType {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    std::fmt::Display::fmt(self.syntax(), f)
-  }
-}
-impl std::fmt::Display for SdlScalarSchema {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
   }
@@ -8060,7 +8807,17 @@ impl std::fmt::Display for SdlSchemaConstraintBlock {
     std::fmt::Display::fmt(self.syntax(), f)
   }
 }
+impl std::fmt::Display for SdlSchemaScalar {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
 impl std::fmt::Display for SequenceType {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
+impl std::fmt::Display for Statement {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
   }
@@ -8281,10 +9038,10 @@ impl From<SdlUnknownSchema> for SyntaxElement {
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
-pub struct Unknown {
+pub struct UnknownExpression {
   syntax: SyntaxNode,
 }
-impl Unknown {
+impl UnknownExpression {
   #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
   #[doc = r""]
   #[doc = r" # Safety"]
@@ -8299,13 +9056,14 @@ impl Unknown {
     support::elements(&self.syntax)
   }
 }
-impl AstNode for Unknown {
+impl AstNode for UnknownExpression {
   type Language = Language;
 
-  const KIND_SET: SyntaxKindSet<Language> = SyntaxKindSet::from_raw(RawSyntaxKind(UNKNOWN as u16));
+  const KIND_SET: SyntaxKindSet<Language> =
+    SyntaxKindSet::from_raw(RawSyntaxKind(UNKNOWN_EXPRESSION as u16));
 
   fn can_cast(kind: SyntaxKind) -> bool {
-    kind == UNKNOWN
+    kind == UNKNOWN_EXPRESSION
   }
 
   fn cast(syntax: SyntaxNode) -> Option<Self> {
@@ -8324,21 +9082,176 @@ impl AstNode for Unknown {
     self.syntax
   }
 }
-impl std::fmt::Debug for Unknown {
+impl std::fmt::Debug for UnknownExpression {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    f.debug_struct("Unknown")
+    f.debug_struct("UnknownExpression")
       .field("items", &DebugSyntaxElementChildren(self.items()))
       .finish()
   }
 }
-impl From<Unknown> for SyntaxNode {
-  fn from(n: Unknown) -> SyntaxNode {
+impl From<UnknownExpression> for SyntaxNode {
+  fn from(n: UnknownExpression) -> SyntaxNode {
     n.syntax
   }
 }
-impl From<Unknown> for SyntaxElement {
-  fn from(n: Unknown) -> SyntaxElement {
+impl From<UnknownExpression> for SyntaxElement {
+  fn from(n: UnknownExpression) -> SyntaxElement {
     n.syntax.into()
+  }
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct UnknownStatement {
+  syntax: SyntaxNode,
+}
+impl UnknownStatement {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self { syntax }
+  }
+
+  pub fn items(&self) -> SyntaxElementChildren {
+    support::elements(&self.syntax)
+  }
+}
+impl AstNode for UnknownStatement {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> =
+    SyntaxKindSet::from_raw(RawSyntaxKind(UNKNOWN_STATEMENT as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == UNKNOWN_STATEMENT
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    if Self::can_cast(syntax.kind()) {
+      Some(Self { syntax })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    &self.syntax
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax
+  }
+}
+impl std::fmt::Debug for UnknownStatement {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("UnknownStatement")
+      .field("items", &DebugSyntaxElementChildren(self.items()))
+      .finish()
+  }
+}
+impl From<UnknownStatement> for SyntaxNode {
+  fn from(n: UnknownStatement) -> SyntaxNode {
+    n.syntax
+  }
+}
+impl From<UnknownStatement> for SyntaxElement {
+  fn from(n: UnknownStatement) -> SyntaxElement {
+    n.syntax.into()
+  }
+}
+#[derive(Clone, Eq, PartialEq, Hash)]
+pub struct EqlRootItemList {
+  syntax_list: SyntaxList,
+}
+impl EqlRootItemList {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self {
+      syntax_list: syntax.into_list(),
+    }
+  }
+}
+impl AstNode for EqlRootItemList {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> =
+    SyntaxKindSet::from_raw(RawSyntaxKind(EQL_ROOT_ITEM_LIST as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == EQL_ROOT_ITEM_LIST
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<EqlRootItemList> {
+    if Self::can_cast(syntax.kind()) {
+      Some(EqlRootItemList {
+        syntax_list: syntax.into_list(),
+      })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    self.syntax_list.node()
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax_list.into_node()
+  }
+}
+#[cfg(feature = "serde")]
+impl Serialize for EqlRootItemList {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut seq = serializer.serialize_seq(Some(self.len()))?;
+    for e in self.iter() {
+      seq.serialize_element(&e)?;
+    }
+    seq.end()
+  }
+}
+impl AstNodeList for EqlRootItemList {
+  type Language = Language;
+  type Node = EqlRootItem;
+
+  fn syntax_list(&self) -> &SyntaxList {
+    &self.syntax_list
+  }
+
+  fn into_syntax_list(self) -> SyntaxList {
+    self.syntax_list
+  }
+}
+impl Debug for EqlRootItemList {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    f.write_str("EqlRootItemList ")?;
+    f.debug_list().entries(self.iter()).finish()
+  }
+}
+impl IntoIterator for &EqlRootItemList {
+  type IntoIter = AstNodeListIterator<Language, EqlRootItem>;
+  type Item = EqlRootItem;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter()
+  }
+}
+impl IntoIterator for EqlRootItemList {
+  type IntoIter = AstNodeListIterator<Language, EqlRootItem>;
+  type Item = EqlRootItem;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter()
   }
 }
 #[derive(Clone, Eq, PartialEq, Hash)]
@@ -9072,6 +9985,98 @@ impl IntoIterator for &SdlPropertyList {
 impl IntoIterator for SdlPropertyList {
   type IntoIter = AstNodeListIterator<Language, SdlProperty>;
   type Item = SdlProperty;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter()
+  }
+}
+#[derive(Clone, Eq, PartialEq, Hash)]
+pub struct SdlRootItemList {
+  syntax_list: SyntaxList,
+}
+impl SdlRootItemList {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self {
+      syntax_list: syntax.into_list(),
+    }
+  }
+}
+impl AstNode for SdlRootItemList {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> =
+    SyntaxKindSet::from_raw(RawSyntaxKind(SDL_ROOT_ITEM_LIST as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == SDL_ROOT_ITEM_LIST
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<SdlRootItemList> {
+    if Self::can_cast(syntax.kind()) {
+      Some(SdlRootItemList {
+        syntax_list: syntax.into_list(),
+      })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    self.syntax_list.node()
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax_list.into_node()
+  }
+}
+#[cfg(feature = "serde")]
+impl Serialize for SdlRootItemList {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut seq = serializer.serialize_seq(Some(self.len()))?;
+    for e in self.iter() {
+      seq.serialize_element(&e)?;
+    }
+    seq.end()
+  }
+}
+impl AstNodeList for SdlRootItemList {
+  type Language = Language;
+  type Node = SdlRootItem;
+
+  fn syntax_list(&self) -> &SyntaxList {
+    &self.syntax_list
+  }
+
+  fn into_syntax_list(self) -> SyntaxList {
+    self.syntax_list
+  }
+}
+impl Debug for SdlRootItemList {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    f.write_str("SdlRootItemList ")?;
+    f.debug_list().entries(self.iter()).finish()
+  }
+}
+impl IntoIterator for &SdlRootItemList {
+  type IntoIter = AstNodeListIterator<Language, SdlRootItem>;
+  type Item = SdlRootItem;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter()
+  }
+}
+impl IntoIterator for SdlRootItemList {
+  type IntoIter = AstNodeListIterator<Language, SdlRootItem>;
+  type Item = SdlRootItem;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()

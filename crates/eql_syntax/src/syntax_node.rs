@@ -11,8 +11,8 @@ use rome_rowan::Language;
 #[cfg(feature = "serde")]
 use serde::Serialize;
 
+use crate::AnyRoot;
 use crate::EqlSyntaxKind;
-use crate::SdlModule;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, schemars::JsonSchema))]
@@ -20,7 +20,7 @@ pub struct EqlLanguage;
 
 impl Language for EqlLanguage {
   type Kind = EqlSyntaxKind;
-  type Root = SdlModule;
+  type Root = AnyRoot;
 }
 
 pub type EqlSyntaxNode = rome_rowan::SyntaxNode<EqlLanguage>;

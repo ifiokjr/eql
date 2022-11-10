@@ -58,6 +58,7 @@ const PUNCTUATION: &'_ [(&'_ str, &'_ str)] = &[
   ("&", "AMPERSAND"),
   ("|", "PIPE"),
   ("@", "AT"),
+  ("$", "DOLLAR"),
 ];
 
 const LITERALS: &'_ [&'_ str] = &[
@@ -85,20 +86,32 @@ const SHARED_KEYWORDS: &'_ [&'_ str] = &[
   "and",
   "anytuple",
   "anytype",
+  "array",
   "as",
+  "b",
+  "bigint",
+  "bool",
   "by",
+  "bytes",
   "commit",
   "configure",
+  "datetime",
   "ddl",
+  "decimal",
   "delete",
   "describe",
   "detached",
   "distinct",
+  "duration",
   "else",
+  "enum",
+  "errmessage",
   "exists",
   "extending",
   "false",
   "filter",
+  "float32",
+  "float64",
   "for",
   "global",
   "group",
@@ -107,8 +120,12 @@ const SHARED_KEYWORDS: &'_ [&'_ str] = &[
   "in",
   "index",
   "insert",
+  "int16",
+  "int32",
+  "int64",
   "introspect",
   "is",
+  "json",
   "like",
   "limit",
   "module",
@@ -118,31 +135,28 @@ const SHARED_KEYWORDS: &'_ [&'_ str] = &[
   "optional",
   "or",
   "policy",
+  "r",
+  "range",
   "sdl",
   "select",
+  "sequence",
   "set",
   "single",
   "start",
   "std",
+  "str",
   "to",
   "true",
+  "tuple",
   "typeof",
   "update",
+  "uuid",
   "variadic",
   "with",
 ];
 
 const EDGEQL_KEYWORDS: &'_ [&'_ str] = &["asc", "desc", "union", "savepoint", "rollback"];
-const SDL_KEYWORDS: &'_ [&'_ str] = &[
-  "annotation",
-  "link",
-  "multi",
-  "sequence",
-  "type",
-  "using",
-  "volatility",
-];
-
+const SDL_KEYWORDS: &'_ [&'_ str] = &["annotation", "link", "multi", "type", "using", "volatility"];
 const DDL_KEYWORDS: &'_ [&'_ str] = &[
   "after", "alter", "before", "create", "drop", "first", "last",
 ];
@@ -182,7 +196,6 @@ const RESERVED_KEYWORDS: &'_ [&'_ str] = &[
   "instance",
   "into",
   "isolation",
-  "json",
   "migration",
   "named",
   "object",
@@ -466,6 +479,10 @@ mod tests {
 
     for node in grammar.iter() {
       unique_names.insert(grammar[node].name.to_shouty_snake_case());
+    }
+
+    for token in grammar.tokens() {
+      println!("token: {}", grammar[token].name);
     }
 
     for node in ast.nodes.iter() {

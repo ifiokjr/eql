@@ -21,9 +21,11 @@ impl SyntaxFactory for EqlSyntaxFactory {
     children: ParsedChildren<Self::Kind>,
   ) -> RawSyntaxNode<Self::Kind> {
     match kind {
-      SDL_UNKNOWN | SDL_UNKNOWN_EXPRESSION | SDL_UNKNOWN_SCHEMA | UNKNOWN => {
-        RawSyntaxNode::new(kind, children.into_iter().map(Some))
-      }
+      SDL_UNKNOWN
+      | SDL_UNKNOWN_EXPRESSION
+      | SDL_UNKNOWN_SCHEMA
+      | UNKNOWN_EXPRESSION
+      | UNKNOWN_STATEMENT => RawSyntaxNode::new(kind, children.into_iter().map(Some)),
       ARRAY_TYPE => {
         let mut elements = (&children).into_iter();
         let mut slots: RawNodeSlots<4usize> = RawNodeSlots::default();
@@ -315,12 +317,28 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.into_node(EMPTY_STATEMENT, children)
       }
+      EQL_ROOT => {
+        let mut elements = (&children).into_iter();
+        let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
+        let mut current_element = elements.next();
+        if let Some(element) = &current_element {
+          if EqlRootItemList::can_cast(element.kind()) {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if current_element.is_some() {
+          return RawSyntaxNode::new(EQL_ROOT.to_unknown(), children.into_iter().map(Some));
+        }
+        slots.into_node(EQL_ROOT, children)
+      }
       EXPRESSION => {
         let mut elements = (&children).into_iter();
         let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
         let mut current_element = elements.next();
         if let Some(element) = &current_element {
-          if Unknown::can_cast(element.kind()) {
+          if UnknownExpression::can_cast(element.kind()) {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -1307,6 +1325,22 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.into_node(SDL_PROPERTY, children)
       }
+      SDL_ROOT => {
+        let mut elements = (&children).into_iter();
+        let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
+        let mut current_element = elements.next();
+        if let Some(element) = &current_element {
+          if SdlRootItemList::can_cast(element.kind()) {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if current_element.is_some() {
+          return RawSyntaxNode::new(SDL_ROOT.to_unknown(), children.into_iter().map(Some));
+        }
+        slots.into_node(SDL_ROOT, children)
+      }
       SDL_SCALAR_BLOCK => {
         let mut elements = (&children).into_iter();
         let mut slots: RawNodeSlots<5usize> = RawNodeSlots::default();
@@ -1405,60 +1439,6 @@ impl SyntaxFactory for EqlSyntaxFactory {
           );
         }
         slots.into_node(SDL_SCALAR_EXTENDING_TYPE, children)
-      }
-      SDL_SCALAR_SCHEMA => {
-        let mut elements = (&children).into_iter();
-        let mut slots: RawNodeSlots<6usize> = RawNodeSlots::default();
-        let mut current_element = elements.next();
-        if let Some(element) = &current_element {
-          if element.kind() == T![abstract] {
-            slots.mark_present();
-            current_element = elements.next();
-          }
-        }
-        slots.next_slot();
-        if let Some(element) = &current_element {
-          if element.kind() == T![scalar] {
-            slots.mark_present();
-            current_element = elements.next();
-          }
-        }
-        slots.next_slot();
-        if let Some(element) = &current_element {
-          if element.kind() == T![type] {
-            slots.mark_present();
-            current_element = elements.next();
-          }
-        }
-        slots.next_slot();
-        if let Some(element) = &current_element {
-          if Name::can_cast(element.kind()) {
-            slots.mark_present();
-            current_element = elements.next();
-          }
-        }
-        slots.next_slot();
-        if let Some(element) = &current_element {
-          if SdlScalarExtending::can_cast(element.kind()) {
-            slots.mark_present();
-            current_element = elements.next();
-          }
-        }
-        slots.next_slot();
-        if let Some(element) = &current_element {
-          if SdlScalarBody::can_cast(element.kind()) {
-            slots.mark_present();
-            current_element = elements.next();
-          }
-        }
-        slots.next_slot();
-        if current_element.is_some() {
-          return RawSyntaxNode::new(
-            SDL_SCALAR_SCHEMA.to_unknown(),
-            children.into_iter().map(Some),
-          );
-        }
-        slots.into_node(SDL_SCALAR_SCHEMA, children)
       }
       SDL_SCHEMA_CONSTRAIN_PARAM => {
         let mut elements = (&children).into_iter();
@@ -1641,6 +1621,60 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.into_node(SDL_SCHEMA_CONSTRAINT_BLOCK, children)
       }
+      SDL_SCHEMA_SCALAR => {
+        let mut elements = (&children).into_iter();
+        let mut slots: RawNodeSlots<6usize> = RawNodeSlots::default();
+        let mut current_element = elements.next();
+        if let Some(element) = &current_element {
+          if element.kind() == T![abstract] {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if let Some(element) = &current_element {
+          if element.kind() == T![scalar] {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if let Some(element) = &current_element {
+          if element.kind() == T![type] {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if let Some(element) = &current_element {
+          if Name::can_cast(element.kind()) {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if let Some(element) = &current_element {
+          if SdlScalarExtending::can_cast(element.kind()) {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if let Some(element) = &current_element {
+          if SdlScalarBody::can_cast(element.kind()) {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if current_element.is_some() {
+          return RawSyntaxNode::new(
+            SDL_SCHEMA_SCALAR.to_unknown(),
+            children.into_iter().map(Some),
+          );
+        }
+        slots.into_node(SDL_SCHEMA_SCALAR, children)
+      }
       SEQUENCE_TYPE => {
         let mut elements = (&children).into_iter();
         let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
@@ -1656,6 +1690,22 @@ impl SyntaxFactory for EqlSyntaxFactory {
           return RawSyntaxNode::new(SEQUENCE_TYPE.to_unknown(), children.into_iter().map(Some));
         }
         slots.into_node(SEQUENCE_TYPE, children)
+      }
+      STATEMENT => {
+        let mut elements = (&children).into_iter();
+        let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
+        let mut current_element = elements.next();
+        if let Some(element) = &current_element {
+          if UnknownStatement::can_cast(element.kind()) {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if current_element.is_some() {
+          return RawSyntaxNode::new(STATEMENT.to_unknown(), children.into_iter().map(Some));
+        }
+        slots.into_node(STATEMENT, children)
       }
       STRING_TYPE => {
         let mut elements = (&children).into_iter();
@@ -1785,6 +1835,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.into_node(UUID_TYPE, children)
       }
+      EQL_ROOT_ITEM_LIST => Self::make_node_list_syntax(kind, children, EqlRootItem::can_cast),
       SDL_ANNOTATION_LIST => Self::make_node_list_syntax(kind, children, SdlAnnotation::can_cast),
       SDL_CONSTRAINT_ARG_LIST => {
         Self::make_node_list_syntax(kind, children, SdlConstraintArg::can_cast)
@@ -1799,6 +1850,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
       SDL_INDEX_LIST => Self::make_node_list_syntax(kind, children, SdlIndex::can_cast),
       SDL_LINK_LIST => Self::make_node_list_syntax(kind, children, SdlLink::can_cast),
       SDL_PROPERTY_LIST => Self::make_node_list_syntax(kind, children, SdlProperty::can_cast),
+      SDL_ROOT_ITEM_LIST => Self::make_node_list_syntax(kind, children, SdlRootItem::can_cast),
       SDL_SCHEMA_CONSTRAIN_PARAM_LIST => {
         Self::make_node_list_syntax(kind, children, SdlSchemaConstrainParam::can_cast)
       }

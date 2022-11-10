@@ -801,9 +801,11 @@ pub fn generate_nodes(ast: &AstSrc) -> Result<String> {
 
   let serde_import = quote! {
       #[cfg(feature = "serde")]
-      use serde::{Serialize, Serializer};
-      #[cfg(feature = "serde")]
       use serde::ser::SerializeSeq;
+      #[cfg(feature = "serde")]
+      use serde::Serialize;
+      #[cfg(feature = "serde")]
+      use serde::Serializer;
   };
 
   let ast = quote! {

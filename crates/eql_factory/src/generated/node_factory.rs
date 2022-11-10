@@ -137,10 +137,16 @@ pub fn empty_statement(semicolon_token: SyntaxToken) -> EmptyStatement {
     [Some(SyntaxElement::Token(semicolon_token))],
   ))
 }
-pub fn expression(unknown: Unknown) -> Expression {
+pub fn eql_root(eql_root_item_list: EqlRootItemList) -> EqlRoot {
+  EqlRoot::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::EQL_ROOT,
+    [Some(SyntaxElement::Node(eql_root_item_list.into_syntax()))],
+  ))
+}
+pub fn expression(unknown_expression: UnknownExpression) -> Expression {
   Expression::unwrap_cast(SyntaxNode::new_detached(
     EqlSyntaxKind::EXPRESSION,
-    [Some(SyntaxElement::Node(unknown.into_syntax()))],
+    [Some(SyntaxElement::Node(unknown_expression.into_syntax()))],
   ))
 }
 pub fn float_literal_expression(value_token: SyntaxToken) -> FloatLiteralExpression {
@@ -728,6 +734,12 @@ pub fn sdl_property(sdl_unknown: SdlUnknown) -> SdlProperty {
     [Some(SyntaxElement::Node(sdl_unknown.into_syntax()))],
   ))
 }
+pub fn sdl_root(sdl_root_item_list: SdlRootItemList) -> SdlRoot {
+  SdlRoot::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::SDL_ROOT,
+    [Some(SyntaxElement::Node(sdl_root_item_list.into_syntax()))],
+  ))
+}
 pub fn sdl_scalar_block(
   open_curly_token: SyntaxToken,
   annotations: SdlAnnotationList,
@@ -793,56 +805,6 @@ pub fn sdl_scalar_extending_type(
       Some(SyntaxElement::Node(extends.into_syntax())),
     ],
   ))
-}
-pub fn sdl_scalar_schema(
-  scalar_token: SyntaxToken,
-  type_token: SyntaxToken,
-  name: Name,
-  body: SdlScalarBody,
-) -> SdlScalarSchemaBuilder {
-  SdlScalarSchemaBuilder {
-    scalar_token,
-    type_token,
-    name,
-    body,
-    abstract_token: None,
-    extending: None,
-  }
-}
-pub struct SdlScalarSchemaBuilder {
-  scalar_token: SyntaxToken,
-  type_token: SyntaxToken,
-  name: Name,
-  body: SdlScalarBody,
-  abstract_token: Option<SyntaxToken>,
-  extending: Option<SdlScalarExtending>,
-}
-impl SdlScalarSchemaBuilder {
-  pub fn with_abstract_token(mut self, abstract_token: SyntaxToken) -> Self {
-    self.abstract_token = Some(abstract_token);
-    self
-  }
-
-  pub fn with_extending(mut self, extending: SdlScalarExtending) -> Self {
-    self.extending = Some(extending);
-    self
-  }
-
-  pub fn build(self) -> SdlScalarSchema {
-    SdlScalarSchema::unwrap_cast(SyntaxNode::new_detached(
-      EqlSyntaxKind::SDL_SCALAR_SCHEMA,
-      [
-        self.abstract_token.map(|token| SyntaxElement::Token(token)),
-        Some(SyntaxElement::Token(self.scalar_token)),
-        Some(SyntaxElement::Token(self.type_token)),
-        Some(SyntaxElement::Node(self.name.into_syntax())),
-        self
-          .extending
-          .map(|token| SyntaxElement::Node(token.into_syntax())),
-        Some(SyntaxElement::Node(self.body.into_syntax())),
-      ],
-    ))
-  }
 }
 pub fn sdl_schema_constrain_param(
   name: UnqualifiedName,
@@ -986,10 +948,66 @@ impl SdlSchemaConstraintBlockBuilder {
     ))
   }
 }
+pub fn sdl_schema_scalar(
+  scalar_token: SyntaxToken,
+  type_token: SyntaxToken,
+  name: Name,
+  body: SdlScalarBody,
+) -> SdlSchemaScalarBuilder {
+  SdlSchemaScalarBuilder {
+    scalar_token,
+    type_token,
+    name,
+    body,
+    abstract_token: None,
+    extending: None,
+  }
+}
+pub struct SdlSchemaScalarBuilder {
+  scalar_token: SyntaxToken,
+  type_token: SyntaxToken,
+  name: Name,
+  body: SdlScalarBody,
+  abstract_token: Option<SyntaxToken>,
+  extending: Option<SdlScalarExtending>,
+}
+impl SdlSchemaScalarBuilder {
+  pub fn with_abstract_token(mut self, abstract_token: SyntaxToken) -> Self {
+    self.abstract_token = Some(abstract_token);
+    self
+  }
+
+  pub fn with_extending(mut self, extending: SdlScalarExtending) -> Self {
+    self.extending = Some(extending);
+    self
+  }
+
+  pub fn build(self) -> SdlSchemaScalar {
+    SdlSchemaScalar::unwrap_cast(SyntaxNode::new_detached(
+      EqlSyntaxKind::SDL_SCHEMA_SCALAR,
+      [
+        self.abstract_token.map(|token| SyntaxElement::Token(token)),
+        Some(SyntaxElement::Token(self.scalar_token)),
+        Some(SyntaxElement::Token(self.type_token)),
+        Some(SyntaxElement::Node(self.name.into_syntax())),
+        self
+          .extending
+          .map(|token| SyntaxElement::Node(token.into_syntax())),
+        Some(SyntaxElement::Node(self.body.into_syntax())),
+      ],
+    ))
+  }
+}
 pub fn sequence_type(sequence_token: SyntaxToken) -> SequenceType {
   SequenceType::unwrap_cast(SyntaxNode::new_detached(
     EqlSyntaxKind::SEQUENCE_TYPE,
     [Some(SyntaxElement::Token(sequence_token))],
+  ))
+}
+pub fn statement(unknown_statement: UnknownStatement) -> Statement {
+  Statement::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::STATEMENT,
+    [Some(SyntaxElement::Node(unknown_statement.into_syntax()))],
   ))
 }
 pub fn string_type(str_token: SyntaxToken) -> StringType {
@@ -1040,6 +1058,18 @@ pub fn uuid_type(uuid_token: SyntaxToken) -> UuidType {
   UuidType::unwrap_cast(SyntaxNode::new_detached(
     EqlSyntaxKind::UUID_TYPE,
     [Some(SyntaxElement::Token(uuid_token))],
+  ))
+}
+pub fn eql_root_item_list<I>(items: I) -> EqlRootItemList
+where
+  I: IntoIterator<Item = EqlRootItem>,
+  I::IntoIter: ExactSizeIterator,
+{
+  EqlRootItemList::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::EQL_ROOT_ITEM_LIST,
+    items
+      .into_iter()
+      .map(|item| Some(item.into_syntax().into())),
   ))
 }
 pub fn sdl_annotation_list<I>(items: I) -> SdlAnnotationList
@@ -1156,6 +1186,18 @@ where
       .map(|item| Some(item.into_syntax().into())),
   ))
 }
+pub fn sdl_root_item_list<I>(items: I) -> SdlRootItemList
+where
+  I: IntoIterator<Item = SdlRootItem>,
+  I::IntoIter: ExactSizeIterator,
+{
+  SdlRootItemList::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::SDL_ROOT_ITEM_LIST,
+    items
+      .into_iter()
+      .map(|item| Some(item.into_syntax().into())),
+  ))
+}
 pub fn sdl_schema_constrain_param_list<I>(items: I) -> SdlSchemaConstrainParamList
 where
   I: IntoIterator<Item = SdlSchemaConstrainParam>,
@@ -1228,10 +1270,23 @@ where
     slots,
   ))
 }
-pub fn unknown<I>(slots: I) -> Unknown
+pub fn unknown_expression<I>(slots: I) -> UnknownExpression
 where
   I: IntoIterator<Item = Option<SyntaxElement>>,
   I::IntoIter: ExactSizeIterator,
 {
-  Unknown::unwrap_cast(SyntaxNode::new_detached(EqlSyntaxKind::UNKNOWN, slots))
+  UnknownExpression::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::UNKNOWN_EXPRESSION,
+    slots,
+  ))
+}
+pub fn unknown_statement<I>(slots: I) -> UnknownStatement
+where
+  I: IntoIterator<Item = Option<SyntaxElement>>,
+  I::IntoIter: ExactSizeIterator,
+{
+  UnknownStatement::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::UNKNOWN_STATEMENT,
+    slots,
+  ))
 }

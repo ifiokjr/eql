@@ -10,4 +10,4 @@ pub mod make;
 #[doc(hidden)]
 pub use eql_syntax as syntax;
 
-pub type JsSyntaxTreeBuilder = TreeBuilder<'_, EqlLanguage, EqlSyntaxFactory>;
+pub type JsSyntaxTreeBuilder = TreeBuilder<'static, EqlLanguage, EqlSyntaxFactory>;

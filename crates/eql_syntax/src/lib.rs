@@ -13,6 +13,7 @@ pub use rome_rowan::TextSize;
 pub use rome_rowan::TokenAtOffset;
 pub use rome_rowan::TriviaPieceKind;
 pub use rome_rowan::WalkEvent;
+pub use source_type::*;
 pub use syntax_node::*;
 
 impl From<u16> for EqlSyntaxKind {
@@ -30,27 +31,35 @@ impl From<EqlSyntaxKind> for u16 {
 
 impl rome_rowan::SyntaxKind for EqlSyntaxKind {
   fn is_unknown(&self) -> bool {
-    todo!()
+    matches!(
+      self,
+      Self::ANY_UNKNOWN
+        | Self::SDL_UNKNOWN_SCHEMA
+        | Self::SDL_UNKNOWN_EXPRESSION
+        | Self::SDL_UNKNOWN
+        | Self::UNKNOWN_EXPRESSION
+        | Self::UNKNOWN_STATEMENT
+    )
   }
 
   fn to_unknown(&self) -> Self {
-    todo!()
+    Self::ANY_UNKNOWN
   }
 
   fn to_raw(&self) -> RawSyntaxKind {
-    todo!()
+    RawSyntaxKind(*self as u16)
   }
 
   fn from_raw(raw: RawSyntaxKind) -> Self {
-    todo!()
+    Self::from(raw.0)
   }
 
   fn is_root(&self) -> bool {
-    todo!()
+    AnyRoot::can_cast(*self)
   }
 
   fn is_list(&self) -> bool {
-    todo!()
+    EqlSyntaxKind::is_list(*self)
   }
 }
 
@@ -135,15 +144,6 @@ impl OperatorPrecedence {
       T![^] => OperatorPrecedence::Exponential,
       _ => return None,
     })
-  }
-
-  pub const fn is_bitwise(&self) -> bool {
-    matches!(
-      self,
-      OperatorPrecedence::BitwiseAnd
-        | OperatorPrecedence::BitwiseOr
-        | OperatorPrecedence::BitwiseXor
-    )
   }
 
   pub const fn is_additive(&self) -> bool {

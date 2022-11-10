@@ -36,12 +36,20 @@
 // For this reason, SyntaxElement = SyntaxElement
 SyntaxElement = SyntaxElement
 
+AnyRoot = SdlRoot | EqlRoot
+AnyUnknown =
+  SdlUnknown
+  | SdlUnknownSchema
+  | SdlUnknownExpression
+  | UnknownExpression
+  | UnknownStatement
+
 SdlUnknown = SyntaxElement*
 SdlUnknownSchema = SyntaxElement*
 SdlUnknownExpression = SyntaxElement*
 
-EmptyStatement = ';'
 
+EmptyStatement = ';'
 
 // Names
 Name =
@@ -62,6 +70,13 @@ ParameterName =
   '$'
   parameter_name: 'ident'
 
+SdlRoot = SdlRootItemList
+SdlRootItemList = SdlRootItem*
+
+SdlRootItem =
+  SdlModule
+  | SdlSchema
+
 SdlModule =
   'module'
   UnqualifiedName
@@ -70,11 +85,12 @@ SdlModule =
   '}'
   ';'?
 
-
 SdlSchemaStatements = SdlSchema*
 SdlSchema = EmptyStatement
   | SdlObjectSchema
   | SdlAnnotationSchema
+  | SdlSchemaScalar
+  | SdlSchemaConstraint
 
 SdlObjectSchema =
   'abstract'?
@@ -138,8 +154,7 @@ SdlAnnotationSchemaBlock =
 ///   constraint min_value(0);
 /// }
 /// ```
-
-SdlScalarSchema =
+SdlSchemaScalar =
   'abstract'?
   'scalar'
   'type'
@@ -247,9 +262,14 @@ SdlEnumDeclarationMembers = (UnqualifiedName (',' UnqualifiedName)*)
 // EdgeQL
 //
 
-Unknown = SyntaxElement*
-Expression = Unknown
+EqlRoot = EqlRootItemList
 
+UnknownExpression = SyntaxElement*
+UnknownStatement = SyntaxElement*
+Expression = UnknownExpression
+Statement = UnknownStatement
+EqlRootItemList = EqlRootItem*
+EqlRootItem = AnyLiteralExpression | Expression | Statement
 
 AnyLiteralExpression =
 	StringLiteralExpression

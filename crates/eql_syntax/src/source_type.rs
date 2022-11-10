@@ -57,7 +57,7 @@ impl Display for SourceTypeError {
 }
 
 /// It deduce the [SourceType] from the file name and its extension
-fn compute_language_path_or_extension(extension: &str) -> Result<Language, SourceTypeError> {
+pub fn compute_language(extension: &str) -> Result<Language, SourceTypeError> {
   let language = match extension {
     "edgeql" => Language::EdgeQL,
     "sdl" => Language::Sdl,

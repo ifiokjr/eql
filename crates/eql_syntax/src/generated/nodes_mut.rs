@@ -188,8 +188,17 @@ impl EmptyStatement {
     )
   }
 }
+impl EqlRoot {
+  pub fn with_eql_root_item_list(self, element: EqlRootItemList) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(0usize..=0usize, once(Some(element.into_syntax().into()))),
+    )
+  }
+}
 impl Expression {
-  pub fn with_unknown(self, element: Unknown) -> Self {
+  pub fn with_unknown_expression(self, element: UnknownExpression) -> Self {
     Self::unwrap_cast(
       self
         .syntax
@@ -951,6 +960,15 @@ impl SdlProperty {
     )
   }
 }
+impl SdlRoot {
+  pub fn with_sdl_root_item_list(self, element: SdlRootItemList) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(0usize..=0usize, once(Some(element.into_syntax().into()))),
+    )
+  }
+}
 impl SdlScalarBlock {
   pub fn with_open_curly_token(self, element: SyntaxToken) -> Self {
     Self::unwrap_cast(
@@ -1023,54 +1041,6 @@ impl SdlScalarExtendingType {
       self
         .syntax
         .splice_slots(1usize..=1usize, once(Some(element.into_syntax().into()))),
-    )
-  }
-}
-impl SdlScalarSchema {
-  pub fn with_abstract_token(self, element: Option<SyntaxToken>) -> Self {
-    Self::unwrap_cast(
-      self
-        .syntax
-        .splice_slots(0usize..=0usize, once(element.map(|element| element.into()))),
-    )
-  }
-
-  pub fn with_scalar_token(self, element: SyntaxToken) -> Self {
-    Self::unwrap_cast(
-      self
-        .syntax
-        .splice_slots(1usize..=1usize, once(Some(element.into()))),
-    )
-  }
-
-  pub fn with_type_token(self, element: SyntaxToken) -> Self {
-    Self::unwrap_cast(
-      self
-        .syntax
-        .splice_slots(2usize..=2usize, once(Some(element.into()))),
-    )
-  }
-
-  pub fn with_name(self, element: Name) -> Self {
-    Self::unwrap_cast(
-      self
-        .syntax
-        .splice_slots(3usize..=3usize, once(Some(element.into_syntax().into()))),
-    )
-  }
-
-  pub fn with_extending(self, element: Option<SdlScalarExtending>) -> Self {
-    Self::unwrap_cast(self.syntax.splice_slots(
-      4usize..=4usize,
-      once(element.map(|element| element.into_syntax().into())),
-    ))
-  }
-
-  pub fn with_body(self, element: SdlScalarBody) -> Self {
-    Self::unwrap_cast(
-      self
-        .syntax
-        .splice_slots(5usize..=5usize, once(Some(element.into_syntax().into()))),
     )
   }
 }
@@ -1226,12 +1196,69 @@ impl SdlSchemaConstraintBlock {
     )
   }
 }
+impl SdlSchemaScalar {
+  pub fn with_abstract_token(self, element: Option<SyntaxToken>) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(0usize..=0usize, once(element.map(|element| element.into()))),
+    )
+  }
+
+  pub fn with_scalar_token(self, element: SyntaxToken) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(1usize..=1usize, once(Some(element.into()))),
+    )
+  }
+
+  pub fn with_type_token(self, element: SyntaxToken) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(2usize..=2usize, once(Some(element.into()))),
+    )
+  }
+
+  pub fn with_name(self, element: Name) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(3usize..=3usize, once(Some(element.into_syntax().into()))),
+    )
+  }
+
+  pub fn with_extending(self, element: Option<SdlScalarExtending>) -> Self {
+    Self::unwrap_cast(self.syntax.splice_slots(
+      4usize..=4usize,
+      once(element.map(|element| element.into_syntax().into())),
+    ))
+  }
+
+  pub fn with_body(self, element: SdlScalarBody) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(5usize..=5usize, once(Some(element.into_syntax().into()))),
+    )
+  }
+}
 impl SequenceType {
   pub fn with_sequence_token(self, element: SyntaxToken) -> Self {
     Self::unwrap_cast(
       self
         .syntax
         .splice_slots(0usize..=0usize, once(Some(element.into()))),
+    )
+  }
+}
+impl Statement {
+  pub fn with_unknown_statement(self, element: UnknownStatement) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(0usize..=0usize, once(Some(element.into_syntax().into()))),
     )
   }
 }

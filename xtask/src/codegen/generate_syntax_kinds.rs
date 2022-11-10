@@ -12,21 +12,25 @@ use super::SharedQuotes;
 pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
   let shared_quotes = SharedQuotes {};
   let syntax_kind = shared_quotes.syntax_kind();
-  let punctuation_values = grammar.punctuation.iter().map(|(token, _name)| {
-    // These tokens, when parsed to proc_macro2::TokenStream, generates a stream of
-    // bytes that can't be recognized by [quote].
-    // Hence, they need to be thread differently
-    if "{}[]()`".contains(token) {
-      let c = token.chars().next().unwrap();
-      quote! { #c }
-    } else if ["$=", "//"].contains(token) {
-      let token = Literal::string(token);
-      quote! { #token }
-    } else {
-      let cs = token.chars().map(|c| Punct::new(c, Spacing::Joint));
-      quote! { #(#cs)* }
-    }
-  });
+  let punctuation_values = grammar
+    .punctuation
+    .iter()
+    .map(|(token, _name)| {
+      // These tokens, when parsed to proc_macro2::TokenStream, generates a stream of
+      // bytes that can't be recognized by [quote].
+      // Hence, they need to be thread differently
+      if "{}[]()`".contains(token) {
+        let c = token.chars().next().unwrap();
+        quote! { #c }
+      } else if ["$=", "//"].contains(token) {
+        let token = Literal::string(token);
+        quote! { #token }
+      } else {
+        let cs = token.chars().map(|c| Punct::new(c, Spacing::Joint));
+        quote! { #(#cs)* }
+      }
+    })
+    .collect::<Vec<_>>();
   let punctuation_strings = grammar.punctuation.iter().map(|(token, _name)| token);
 
   let punctuation = grammar
@@ -64,7 +68,10 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
   let all_keywords_values = grammar.keywords.to_vec();
   let all_keywords_idents = all_keywords_values
     .iter()
-    .map(|kw| format_ident!("{}", kw))
+    .map(|kw| {
+      println!("kw: {}", kw);
+      format_ident!("{}", kw)
+    })
     .collect::<Vec<_>>();
   let all_keywords = all_keywords_values
     .iter()

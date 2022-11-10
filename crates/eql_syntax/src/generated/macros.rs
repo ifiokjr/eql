@@ -73,6 +73,10 @@ macro_rules! map_syntax_node {
             let $pattern = unsafe { $crate::EmptyStatement::new_unchecked(node) };
             $body
           }
+          $crate::EqlSyntaxKind::EQL_ROOT => {
+            let $pattern = unsafe { $crate::EqlRoot::new_unchecked(node) };
+            $body
+          }
           $crate::EqlSyntaxKind::EXPRESSION => {
             let $pattern = unsafe { $crate::Expression::new_unchecked(node) };
             $body
@@ -201,6 +205,10 @@ macro_rules! map_syntax_node {
             let $pattern = unsafe { $crate::SdlProperty::new_unchecked(node) };
             $body
           }
+          $crate::EqlSyntaxKind::SDL_ROOT => {
+            let $pattern = unsafe { $crate::SdlRoot::new_unchecked(node) };
+            $body
+          }
           $crate::EqlSyntaxKind::SDL_SCALAR_BLOCK => {
             let $pattern = unsafe { $crate::SdlScalarBlock::new_unchecked(node) };
             $body
@@ -211,10 +219,6 @@ macro_rules! map_syntax_node {
           }
           $crate::EqlSyntaxKind::SDL_SCALAR_EXTENDING_TYPE => {
             let $pattern = unsafe { $crate::SdlScalarExtendingType::new_unchecked(node) };
-            $body
-          }
-          $crate::EqlSyntaxKind::SDL_SCALAR_SCHEMA => {
-            let $pattern = unsafe { $crate::SdlScalarSchema::new_unchecked(node) };
             $body
           }
           $crate::EqlSyntaxKind::SDL_SCHEMA_CONSTRAIN_PARAM => {
@@ -233,8 +237,16 @@ macro_rules! map_syntax_node {
             let $pattern = unsafe { $crate::SdlSchemaConstraintBlock::new_unchecked(node) };
             $body
           }
+          $crate::EqlSyntaxKind::SDL_SCHEMA_SCALAR => {
+            let $pattern = unsafe { $crate::SdlSchemaScalar::new_unchecked(node) };
+            $body
+          }
           $crate::EqlSyntaxKind::SEQUENCE_TYPE => {
             let $pattern = unsafe { $crate::SequenceType::new_unchecked(node) };
+            $body
+          }
+          $crate::EqlSyntaxKind::STATEMENT => {
+            let $pattern = unsafe { $crate::Statement::new_unchecked(node) };
             $body
           }
           $crate::EqlSyntaxKind::STRING_TYPE => {
@@ -269,8 +281,16 @@ macro_rules! map_syntax_node {
             let $pattern = unsafe { $crate::SdlUnknownSchema::new_unchecked(node) };
             $body
           }
-          $crate::EqlSyntaxKind::UNKNOWN => {
-            let $pattern = unsafe { $crate::Unknown::new_unchecked(node) };
+          $crate::EqlSyntaxKind::UNKNOWN_EXPRESSION => {
+            let $pattern = unsafe { $crate::UnknownExpression::new_unchecked(node) };
+            $body
+          }
+          $crate::EqlSyntaxKind::UNKNOWN_STATEMENT => {
+            let $pattern = unsafe { $crate::UnknownStatement::new_unchecked(node) };
+            $body
+          }
+          $crate::EqlSyntaxKind::EQL_ROOT_ITEM_LIST => {
+            let $pattern = unsafe { $crate::EqlRootItemList::new_unchecked(node) };
             $body
           }
           $crate::EqlSyntaxKind::SDL_ANNOTATION_LIST => {
@@ -303,6 +323,10 @@ macro_rules! map_syntax_node {
           }
           $crate::EqlSyntaxKind::SDL_PROPERTY_LIST => {
             let $pattern = unsafe { $crate::SdlPropertyList::new_unchecked(node) };
+            $body
+          }
+          $crate::EqlSyntaxKind::SDL_ROOT_ITEM_LIST => {
+            let $pattern = unsafe { $crate::SdlRootItemList::new_unchecked(node) };
             $body
           }
           $crate::EqlSyntaxKind::SDL_SCHEMA_CONSTRAIN_PARAM_LIST => {
