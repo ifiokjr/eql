@@ -1080,6 +1080,7 @@ dependencies = [
 name = "eql_syntax"
 version = "0.0.0"
 dependencies = [
+ "eql_factory",
  "insta",
  "rome_rowan",
  "schemars",
@@ -2354,6 +2355,8 @@ dependencies = [
  "rome_text_edit",
  "rome_text_size",
  "rustc-hash",
+ "schemars",
+ "serde",
 ]
 
 [[package]]

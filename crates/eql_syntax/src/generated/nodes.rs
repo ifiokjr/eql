@@ -493,22 +493,22 @@ impl DotReferenceName {
 
   pub fn as_fields(&self) -> DotReferenceNameFields {
     DotReferenceNameFields {
-      unqualified_name: self.unqualified_name(),
+      name_token: self.name_token(),
       dot_token: self.dot_token(),
-      unqualified_name: self.unqualified_name(),
+      path_token: self.path_token(),
     }
   }
 
-  pub fn unqualified_name(&self) -> SyntaxResult<UnqualifiedName> {
-    support::required_node(&self.syntax, 0usize)
+  pub fn name_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 0usize)
   }
 
   pub fn dot_token(&self) -> SyntaxResult<SyntaxToken> {
     support::required_token(&self.syntax, 1usize)
   }
 
-  pub fn unqualified_name(&self) -> SyntaxResult<UnqualifiedName> {
-    support::required_node(&self.syntax, 2usize)
+  pub fn path_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 2usize)
   }
 }
 #[cfg(feature = "serde")]
@@ -522,9 +522,9 @@ impl Serialize for DotReferenceName {
 }
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DotReferenceNameFields {
-  pub unqualified_name: SyntaxResult<UnqualifiedName>,
+  pub name_token: SyntaxResult<SyntaxToken>,
   pub dot_token: SyntaxResult<SyntaxToken>,
-  pub unqualified_name: SyntaxResult<UnqualifiedName>,
+  pub path_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct DurationType {
@@ -962,7 +962,7 @@ impl ParameterName {
   pub fn as_fields(&self) -> ParameterNameFields {
     ParameterNameFields {
       dollar_token: self.dollar_token(),
-      name: self.name(),
+      parameter_name_token: self.parameter_name_token(),
     }
   }
 
@@ -970,8 +970,8 @@ impl ParameterName {
     support::required_token(&self.syntax, 0usize)
   }
 
-  pub fn name(&self) -> SyntaxResult<UnqualifiedName> {
-    support::required_node(&self.syntax, 1usize)
+  pub fn parameter_name_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 1usize)
   }
 }
 #[cfg(feature = "serde")]
@@ -986,7 +986,7 @@ impl Serialize for ParameterName {
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ParameterNameFields {
   pub dollar_token: SyntaxResult<SyntaxToken>,
-  pub name: SyntaxResult<UnqualifiedName>,
+  pub parameter_name_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct QualifiedName {
@@ -1005,22 +1005,22 @@ impl QualifiedName {
 
   pub fn as_fields(&self) -> QualifiedNameFields {
     QualifiedNameFields {
-      namespace: self.namespace(),
+      name_token: self.name_token(),
       namespace_token: self.namespace_token(),
-      name: self.name(),
+      path_token: self.path_token(),
     }
   }
 
-  pub fn namespace(&self) -> SyntaxResult<UnqualifiedName> {
-    support::required_node(&self.syntax, 0usize)
+  pub fn name_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 0usize)
   }
 
   pub fn namespace_token(&self) -> SyntaxResult<SyntaxToken> {
     support::required_token(&self.syntax, 1usize)
   }
 
-  pub fn name(&self) -> SyntaxResult<UnqualifiedName> {
-    support::required_node(&self.syntax, 2usize)
+  pub fn path_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 2usize)
   }
 }
 #[cfg(feature = "serde")]
@@ -1034,9 +1034,9 @@ impl Serialize for QualifiedName {
 }
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct QualifiedNameFields {
-  pub namespace: SyntaxResult<UnqualifiedName>,
+  pub name_token: SyntaxResult<SyntaxToken>,
   pub namespace_token: SyntaxResult<SyntaxToken>,
-  pub name: SyntaxResult<UnqualifiedName>,
+  pub path_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RangeType {
@@ -1968,7 +1968,7 @@ impl SdlModule {
     support::required_token(&self.syntax, 2usize)
   }
 
-  pub fn statements(&self) -> SdlSchemaStatments {
+  pub fn statements(&self) -> SdlSchemaStatements {
     support::list(&self.syntax, 3usize)
   }
 
@@ -1994,7 +1994,7 @@ pub struct SdlModuleFields {
   pub module_token: SyntaxResult<SyntaxToken>,
   pub unqualified_name: SyntaxResult<UnqualifiedName>,
   pub open_curly_token: SyntaxResult<SyntaxToken>,
-  pub statements: SdlSchemaStatments,
+  pub statements: SdlSchemaStatements,
   pub close_curly_token: SyntaxResult<SyntaxToken>,
   pub semicolon_token: Option<SyntaxToken>,
 }
@@ -2241,10 +2241,10 @@ pub struct SdlScalarBlockFields {
   pub semicolon_token: Option<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct SdlScalarExtending {
+pub struct SdlScalarExtendingEnum {
   pub(crate) syntax: SyntaxNode,
 }
-impl SdlScalarExtending {
+impl SdlScalarExtendingEnum {
   #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
   #[doc = r""]
   #[doc = r" # Safety"]
@@ -2255,10 +2255,53 @@ impl SdlScalarExtending {
     Self { syntax }
   }
 
-  pub fn as_fields(&self) -> SdlScalarExtendingFields {
-    SdlScalarExtendingFields {
+  pub fn as_fields(&self) -> SdlScalarExtendingEnumFields {
+    SdlScalarExtendingEnumFields {
       extending_token: self.extending_token(),
       extends: self.extends(),
+    }
+  }
+
+  pub fn extending_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 0usize)
+  }
+
+  pub fn extends(&self) -> SyntaxResult<SdlEnumDeclaration> {
+    support::required_node(&self.syntax, 1usize)
+  }
+}
+#[cfg(feature = "serde")]
+impl Serialize for SdlScalarExtendingEnum {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    self.as_fields().serialize(serializer)
+  }
+}
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct SdlScalarExtendingEnumFields {
+  pub extending_token: SyntaxResult<SyntaxToken>,
+  pub extends: SyntaxResult<SdlEnumDeclaration>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct SdlScalarExtendingType {
+  pub(crate) syntax: SyntaxNode,
+}
+impl SdlScalarExtendingType {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self { syntax }
+  }
+
+  pub fn as_fields(&self) -> SdlScalarExtendingTypeFields {
+    SdlScalarExtendingTypeFields {
+      extending_token: self.extending_token(),
       extends: self.extends(),
     }
   }
@@ -2270,13 +2313,9 @@ impl SdlScalarExtending {
   pub fn extends(&self) -> SdlExtendingNames {
     support::list(&self.syntax, 1usize)
   }
-
-  pub fn extends(&self) -> SyntaxResult<SdlEnumDeclaration> {
-    support::required_node(&self.syntax, 2usize)
-  }
 }
 #[cfg(feature = "serde")]
-impl Serialize for SdlScalarExtending {
+impl Serialize for SdlScalarExtendingType {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
     S: Serializer,
@@ -2285,10 +2324,9 @@ impl Serialize for SdlScalarExtending {
   }
 }
 #[cfg_attr(feature = "serde", derive(Serialize))]
-pub struct SdlScalarExtendingFields {
+pub struct SdlScalarExtendingTypeFields {
   pub extending_token: SyntaxResult<SyntaxToken>,
   pub extends: SdlExtendingNames,
-  pub extends: SyntaxResult<SdlEnumDeclaration>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct SdlScalarSchema {
@@ -2805,11 +2843,11 @@ impl UnqualifiedName {
 
   pub fn as_fields(&self) -> UnqualifiedNameFields {
     UnqualifiedNameFields {
-      ident_token: self.ident_token(),
+      name_token: self.name_token(),
     }
   }
 
-  pub fn ident_token(&self) -> SyntaxResult<SyntaxToken> {
+  pub fn name_token(&self) -> SyntaxResult<SyntaxToken> {
     support::required_token(&self.syntax, 0usize)
   }
 }
@@ -2824,7 +2862,7 @@ impl Serialize for UnqualifiedName {
 }
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct UnqualifiedNameFields {
-  pub ident_token: SyntaxResult<SyntaxToken>,
+  pub name_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct UuidType {
@@ -3233,6 +3271,27 @@ impl SdlScalarBody {
   pub fn as_sdl_scalar_block(&self) -> Option<&SdlScalarBlock> {
     match &self {
       SdlScalarBody::SdlScalarBlock(item) => Some(item),
+      _ => None,
+    }
+  }
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub enum SdlScalarExtending {
+  SdlScalarExtendingEnum(SdlScalarExtendingEnum),
+  SdlScalarExtendingType(SdlScalarExtendingType),
+}
+impl SdlScalarExtending {
+  pub fn as_sdl_scalar_extending_enum(&self) -> Option<&SdlScalarExtendingEnum> {
+    match &self {
+      SdlScalarExtending::SdlScalarExtendingEnum(item) => Some(item),
+      _ => None,
+    }
+  }
+
+  pub fn as_sdl_scalar_extending_type(&self) -> Option<&SdlScalarExtendingType> {
+    match &self {
+      SdlScalarExtending::SdlScalarExtendingType(item) => Some(item),
       _ => None,
     }
   }
@@ -3914,15 +3973,9 @@ impl AstNode for DotReferenceName {
 impl std::fmt::Debug for DotReferenceName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("DotReferenceName")
-      .field(
-        "unqualified_name",
-        &support::DebugSyntaxResult(self.unqualified_name()),
-      )
+      .field("name_token", &support::DebugSyntaxResult(self.name_token()))
       .field("dot_token", &support::DebugSyntaxResult(self.dot_token()))
-      .field(
-        "unqualified_name",
-        &support::DebugSyntaxResult(self.unqualified_name()),
-      )
+      .field("path_token", &support::DebugSyntaxResult(self.path_token()))
       .finish()
   }
 }
@@ -4469,7 +4522,10 @@ impl std::fmt::Debug for ParameterName {
         "dollar_token",
         &support::DebugSyntaxResult(self.dollar_token()),
       )
-      .field("name", &support::DebugSyntaxResult(self.name()))
+      .field(
+        "parameter_name_token",
+        &support::DebugSyntaxResult(self.parameter_name_token()),
+      )
       .finish()
   }
 }
@@ -4512,12 +4568,12 @@ impl AstNode for QualifiedName {
 impl std::fmt::Debug for QualifiedName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("QualifiedName")
-      .field("namespace", &support::DebugSyntaxResult(self.namespace()))
+      .field("name_token", &support::DebugSyntaxResult(self.name_token()))
       .field(
         "namespace_token",
         &support::DebugSyntaxResult(self.namespace_token()),
       )
-      .field("name", &support::DebugSyntaxResult(self.name()))
+      .field("path_token", &support::DebugSyntaxResult(self.path_token()))
       .finish()
   }
 }
@@ -5672,14 +5728,14 @@ impl From<SdlScalarBlock> for SyntaxElement {
     n.syntax.into()
   }
 }
-impl AstNode for SdlScalarExtending {
+impl AstNode for SdlScalarExtendingEnum {
   type Language = Language;
 
   const KIND_SET: SyntaxKindSet<Language> =
-    SyntaxKindSet::from_raw(RawSyntaxKind(SDL_SCALAR_EXTENDING as u16));
+    SyntaxKindSet::from_raw(RawSyntaxKind(SDL_SCALAR_EXTENDING_ENUM as u16));
 
   fn can_cast(kind: SyntaxKind) -> bool {
-    kind == SDL_SCALAR_EXTENDING
+    kind == SDL_SCALAR_EXTENDING_ENUM
   }
 
   fn cast(syntax: SyntaxNode) -> Option<Self> {
@@ -5698,25 +5754,71 @@ impl AstNode for SdlScalarExtending {
     self.syntax
   }
 }
-impl std::fmt::Debug for SdlScalarExtending {
+impl std::fmt::Debug for SdlScalarExtendingEnum {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    f.debug_struct("SdlScalarExtending")
+    f.debug_struct("SdlScalarExtendingEnum")
+      .field(
+        "extending_token",
+        &support::DebugSyntaxResult(self.extending_token()),
+      )
+      .field("extends", &support::DebugSyntaxResult(self.extends()))
+      .finish()
+  }
+}
+impl From<SdlScalarExtendingEnum> for SyntaxNode {
+  fn from(n: SdlScalarExtendingEnum) -> SyntaxNode {
+    n.syntax
+  }
+}
+impl From<SdlScalarExtendingEnum> for SyntaxElement {
+  fn from(n: SdlScalarExtendingEnum) -> SyntaxElement {
+    n.syntax.into()
+  }
+}
+impl AstNode for SdlScalarExtendingType {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> =
+    SyntaxKindSet::from_raw(RawSyntaxKind(SDL_SCALAR_EXTENDING_TYPE as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == SDL_SCALAR_EXTENDING_TYPE
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    if Self::can_cast(syntax.kind()) {
+      Some(Self { syntax })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    &self.syntax
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax
+  }
+}
+impl std::fmt::Debug for SdlScalarExtendingType {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("SdlScalarExtendingType")
       .field(
         "extending_token",
         &support::DebugSyntaxResult(self.extending_token()),
       )
       .field("extends", &self.extends())
-      .field("extends", &support::DebugSyntaxResult(self.extends()))
       .finish()
   }
 }
-impl From<SdlScalarExtending> for SyntaxNode {
-  fn from(n: SdlScalarExtending) -> SyntaxNode {
+impl From<SdlScalarExtendingType> for SyntaxNode {
+  fn from(n: SdlScalarExtendingType) -> SyntaxNode {
     n.syntax
   }
 }
-impl From<SdlScalarExtending> for SyntaxElement {
-  fn from(n: SdlScalarExtending) -> SyntaxElement {
+impl From<SdlScalarExtendingType> for SyntaxElement {
+  fn from(n: SdlScalarExtendingType) -> SyntaxElement {
     n.syntax.into()
   }
 }
@@ -6210,10 +6312,7 @@ impl AstNode for UnqualifiedName {
 impl std::fmt::Debug for UnqualifiedName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("UnqualifiedName")
-      .field(
-        "ident_token",
-        &support::DebugSyntaxResult(self.ident_token()),
-      )
+      .field("name_token", &support::DebugSyntaxResult(self.name_token()))
       .finish()
   }
 }
@@ -7162,6 +7261,75 @@ impl From<SdlScalarBody> for SyntaxElement {
     node.into()
   }
 }
+impl From<SdlScalarExtendingEnum> for SdlScalarExtending {
+  fn from(node: SdlScalarExtendingEnum) -> SdlScalarExtending {
+    SdlScalarExtending::SdlScalarExtendingEnum(node)
+  }
+}
+impl From<SdlScalarExtendingType> for SdlScalarExtending {
+  fn from(node: SdlScalarExtendingType) -> SdlScalarExtending {
+    SdlScalarExtending::SdlScalarExtendingType(node)
+  }
+}
+impl AstNode for SdlScalarExtending {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> =
+    SdlScalarExtendingEnum::KIND_SET.union(SdlScalarExtendingType::KIND_SET);
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    matches!(kind, SDL_SCALAR_EXTENDING_ENUM | SDL_SCALAR_EXTENDING_TYPE)
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    let res = match syntax.kind() {
+      SDL_SCALAR_EXTENDING_ENUM => {
+        SdlScalarExtending::SdlScalarExtendingEnum(SdlScalarExtendingEnum { syntax })
+      }
+      SDL_SCALAR_EXTENDING_TYPE => {
+        SdlScalarExtending::SdlScalarExtendingType(SdlScalarExtendingType { syntax })
+      }
+      _ => return None,
+    };
+    Some(res)
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    match self {
+      SdlScalarExtending::SdlScalarExtendingEnum(it) => &it.syntax,
+      SdlScalarExtending::SdlScalarExtendingType(it) => &it.syntax,
+    }
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    match self {
+      SdlScalarExtending::SdlScalarExtendingEnum(it) => it.syntax,
+      SdlScalarExtending::SdlScalarExtendingType(it) => it.syntax,
+    }
+  }
+}
+impl std::fmt::Debug for SdlScalarExtending {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      SdlScalarExtending::SdlScalarExtendingEnum(it) => std::fmt::Debug::fmt(it, f),
+      SdlScalarExtending::SdlScalarExtendingType(it) => std::fmt::Debug::fmt(it, f),
+    }
+  }
+}
+impl From<SdlScalarExtending> for SyntaxNode {
+  fn from(n: SdlScalarExtending) -> SyntaxNode {
+    match n {
+      SdlScalarExtending::SdlScalarExtendingEnum(it) => it.into(),
+      SdlScalarExtending::SdlScalarExtendingType(it) => it.into(),
+    }
+  }
+}
+impl From<SdlScalarExtending> for SyntaxElement {
+  fn from(n: SdlScalarExtending) -> SyntaxElement {
+    let node: SyntaxNode = n.into();
+    node.into()
+  }
+}
 impl From<EmptyStatement> for SdlSchema {
   fn from(node: EmptyStatement) -> SdlSchema {
     SdlSchema::EmptyStatement(node)
@@ -7592,6 +7760,11 @@ impl std::fmt::Display for SdlScalarBody {
     std::fmt::Display::fmt(self.syntax(), f)
   }
 }
+impl std::fmt::Display for SdlScalarExtending {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
 impl std::fmt::Display for SdlSchema {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
@@ -7852,7 +8025,12 @@ impl std::fmt::Display for SdlScalarBlock {
     std::fmt::Display::fmt(self.syntax(), f)
   }
 }
-impl std::fmt::Display for SdlScalarExtending {
+impl std::fmt::Display for SdlScalarExtendingEnum {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
+impl std::fmt::Display for SdlScalarExtendingType {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
   }
@@ -8992,10 +9170,10 @@ impl IntoIterator for SdlSchemaConstrainParamList {
   }
 }
 #[derive(Clone, Eq, PartialEq, Hash)]
-pub struct SdlSchemaStatments {
+pub struct SdlSchemaStatements {
   syntax_list: SyntaxList,
 }
-impl SdlSchemaStatments {
+impl SdlSchemaStatements {
   #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
   #[doc = r""]
   #[doc = r" # Safety"]
@@ -9008,19 +9186,19 @@ impl SdlSchemaStatments {
     }
   }
 }
-impl AstNode for SdlSchemaStatments {
+impl AstNode for SdlSchemaStatements {
   type Language = Language;
 
   const KIND_SET: SyntaxKindSet<Language> =
-    SyntaxKindSet::from_raw(RawSyntaxKind(SDL_SCHEMA_STATMENTS as u16));
+    SyntaxKindSet::from_raw(RawSyntaxKind(SDL_SCHEMA_STATEMENTS as u16));
 
   fn can_cast(kind: SyntaxKind) -> bool {
-    kind == SDL_SCHEMA_STATMENTS
+    kind == SDL_SCHEMA_STATEMENTS
   }
 
-  fn cast(syntax: SyntaxNode) -> Option<SdlSchemaStatments> {
+  fn cast(syntax: SyntaxNode) -> Option<SdlSchemaStatements> {
     if Self::can_cast(syntax.kind()) {
-      Some(SdlSchemaStatments {
+      Some(SdlSchemaStatements {
         syntax_list: syntax.into_list(),
       })
     } else {
@@ -9037,7 +9215,7 @@ impl AstNode for SdlSchemaStatments {
   }
 }
 #[cfg(feature = "serde")]
-impl Serialize for SdlSchemaStatments {
+impl Serialize for SdlSchemaStatements {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
     S: Serializer,
@@ -9049,7 +9227,7 @@ impl Serialize for SdlSchemaStatments {
     seq.end()
   }
 }
-impl AstNodeList for SdlSchemaStatments {
+impl AstNodeList for SdlSchemaStatements {
   type Language = Language;
   type Node = SdlSchema;
 
@@ -9061,13 +9239,13 @@ impl AstNodeList for SdlSchemaStatments {
     self.syntax_list
   }
 }
-impl Debug for SdlSchemaStatments {
+impl Debug for SdlSchemaStatements {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    f.write_str("SdlSchemaStatments ")?;
+    f.write_str("SdlSchemaStatements ")?;
     f.debug_list().entries(self.iter()).finish()
   }
 }
-impl IntoIterator for &SdlSchemaStatments {
+impl IntoIterator for &SdlSchemaStatements {
   type IntoIter = AstNodeListIterator<Language, SdlSchema>;
   type Item = SdlSchema;
 
@@ -9075,7 +9253,7 @@ impl IntoIterator for &SdlSchemaStatments {
     self.iter()
   }
 }
-impl IntoIterator for SdlSchemaStatments {
+impl IntoIterator for SdlSchemaStatements {
   type IntoIter = AstNodeListIterator<Language, SdlSchema>;
   type Item = SdlSchema;
 

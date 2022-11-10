@@ -7,11 +7,12 @@ edition = "2021"
 
 [dependencies]
 rome_rowan.workspace = true
-schemars = "0.8.11"
-serde = "1.0.147"
+schemars = { version = "0.8.11", optional = true }
+serde = { version = "1.0.147", features = ["derive"], optional = true }
 
 [dev-dependencies]
+eql_factory = { path = "../eql_factory" }
 insta.workspace = true
 
 [features]
-default = []
+serde = ["dep:serde", "schemars", "rome_rowan/serde"]

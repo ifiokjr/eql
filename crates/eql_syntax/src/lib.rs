@@ -4,6 +4,8 @@ mod source_type;
 mod syntax_node;
 
 pub use generated::*;
+use rome_rowan::AstNode;
+use rome_rowan::RawSyntaxKind;
 pub use rome_rowan::SyntaxNodeText;
 pub use rome_rowan::TextLen;
 pub use rome_rowan::TextRange;
@@ -13,7 +15,44 @@ pub use rome_rowan::TriviaPieceKind;
 pub use rome_rowan::WalkEvent;
 pub use syntax_node::*;
 
-impl rome_rowan::SyntaxKind for EqlSyntaxKind {}
+impl From<u16> for EqlSyntaxKind {
+  fn from(d: u16) -> EqlSyntaxKind {
+    assert!(d <= (EqlSyntaxKind::__LAST as u16));
+    unsafe { std::mem::transmute::<u16, EqlSyntaxKind>(d) }
+  }
+}
+
+impl From<EqlSyntaxKind> for u16 {
+  fn from(k: EqlSyntaxKind) -> u16 {
+    k as u16
+  }
+}
+
+impl rome_rowan::SyntaxKind for EqlSyntaxKind {
+  fn is_unknown(&self) -> bool {
+    todo!()
+  }
+
+  fn to_unknown(&self) -> Self {
+    todo!()
+  }
+
+  fn to_raw(&self) -> RawSyntaxKind {
+    todo!()
+  }
+
+  fn from_raw(raw: RawSyntaxKind) -> Self {
+    todo!()
+  }
+
+  fn is_root(&self) -> bool {
+    todo!()
+  }
+
+  fn is_list(&self) -> bool {
+    todo!()
+  }
+}
 
 #[allow(dead_code)]
 #[derive(Debug, Eq, Ord, PartialOrd, PartialEq, Copy, Clone, Hash)]
@@ -75,11 +114,7 @@ impl OperatorPrecedence {
   pub fn is_right_to_left(&self) -> bool {
     matches!(
       self,
-      OperatorPrecedence::Yield
-        | OperatorPrecedence::Assignment
-        | OperatorPrecedence::Conditional
-        | OperatorPrecedence::Exponential
-        | OperatorPrecedence::Update
+      OperatorPrecedence::Conditional | OperatorPrecedence::Exponential | OperatorPrecedence::Cast
     )
   }
 

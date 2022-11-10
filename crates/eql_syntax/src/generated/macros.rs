@@ -205,8 +205,12 @@ macro_rules! map_syntax_node {
             let $pattern = unsafe { $crate::SdlScalarBlock::new_unchecked(node) };
             $body
           }
-          $crate::EqlSyntaxKind::SDL_SCALAR_EXTENDING => {
-            let $pattern = unsafe { $crate::SdlScalarExtending::new_unchecked(node) };
+          $crate::EqlSyntaxKind::SDL_SCALAR_EXTENDING_ENUM => {
+            let $pattern = unsafe { $crate::SdlScalarExtendingEnum::new_unchecked(node) };
+            $body
+          }
+          $crate::EqlSyntaxKind::SDL_SCALAR_EXTENDING_TYPE => {
+            let $pattern = unsafe { $crate::SdlScalarExtendingType::new_unchecked(node) };
             $body
           }
           $crate::EqlSyntaxKind::SDL_SCALAR_SCHEMA => {
@@ -305,8 +309,8 @@ macro_rules! map_syntax_node {
             let $pattern = unsafe { $crate::SdlSchemaConstrainParamList::new_unchecked(node) };
             $body
           }
-          $crate::EqlSyntaxKind::SDL_SCHEMA_STATMENTS => {
-            let $pattern = unsafe { $crate::SdlSchemaStatments::new_unchecked(node) };
+          $crate::EqlSyntaxKind::SDL_SCHEMA_STATEMENTS => {
+            let $pattern = unsafe { $crate::SdlSchemaStatements::new_unchecked(node) };
             $body
           }
           $crate::EqlSyntaxKind::TUPLE_TYPE_MEMBERS => {

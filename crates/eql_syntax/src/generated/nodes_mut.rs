@@ -146,11 +146,11 @@ impl DecimalType {
   }
 }
 impl DotReferenceName {
-  pub fn with_unqualified_name(self, element: UnqualifiedName) -> Self {
+  pub fn with_name_token(self, element: SyntaxToken) -> Self {
     Self::unwrap_cast(
       self
         .syntax
-        .splice_slots(0usize..=0usize, once(Some(element.into_syntax().into()))),
+        .splice_slots(0usize..=0usize, once(Some(element.into()))),
     )
   }
 
@@ -162,11 +162,11 @@ impl DotReferenceName {
     )
   }
 
-  pub fn with_unqualified_name(self, element: UnqualifiedName) -> Self {
+  pub fn with_path_token(self, element: SyntaxToken) -> Self {
     Self::unwrap_cast(
       self
         .syntax
-        .splice_slots(2usize..=2usize, once(Some(element.into_syntax().into()))),
+        .splice_slots(2usize..=2usize, once(Some(element.into()))),
     )
   }
 }
@@ -278,20 +278,20 @@ impl ParameterName {
     )
   }
 
-  pub fn with_name(self, element: UnqualifiedName) -> Self {
+  pub fn with_parameter_name_token(self, element: SyntaxToken) -> Self {
     Self::unwrap_cast(
       self
         .syntax
-        .splice_slots(1usize..=1usize, once(Some(element.into_syntax().into()))),
+        .splice_slots(1usize..=1usize, once(Some(element.into()))),
     )
   }
 }
 impl QualifiedName {
-  pub fn with_namespace(self, element: UnqualifiedName) -> Self {
+  pub fn with_name_token(self, element: SyntaxToken) -> Self {
     Self::unwrap_cast(
       self
         .syntax
-        .splice_slots(0usize..=0usize, once(Some(element.into_syntax().into()))),
+        .splice_slots(0usize..=0usize, once(Some(element.into()))),
     )
   }
 
@@ -303,11 +303,11 @@ impl QualifiedName {
     )
   }
 
-  pub fn with_name(self, element: UnqualifiedName) -> Self {
+  pub fn with_path_token(self, element: SyntaxToken) -> Self {
     Self::unwrap_cast(
       self
         .syntax
-        .splice_slots(2usize..=2usize, once(Some(element.into_syntax().into()))),
+        .splice_slots(2usize..=2usize, once(Some(element.into()))),
     )
   }
 }
@@ -813,7 +813,7 @@ impl SdlModule {
     )
   }
 
-  pub fn with_statements(self, element: SdlSchemaStatments) -> Self {
+  pub fn with_statements(self, element: SdlSchemaStatements) -> Self {
     Self::unwrap_cast(
       self
         .syntax
@@ -992,7 +992,24 @@ impl SdlScalarBlock {
     )
   }
 }
-impl SdlScalarExtending {
+impl SdlScalarExtendingEnum {
+  pub fn with_extending_token(self, element: SyntaxToken) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(0usize..=0usize, once(Some(element.into()))),
+    )
+  }
+
+  pub fn with_extends(self, element: SdlEnumDeclaration) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(1usize..=1usize, once(Some(element.into_syntax().into()))),
+    )
+  }
+}
+impl SdlScalarExtendingType {
   pub fn with_extending_token(self, element: SyntaxToken) -> Self {
     Self::unwrap_cast(
       self
@@ -1006,14 +1023,6 @@ impl SdlScalarExtending {
       self
         .syntax
         .splice_slots(1usize..=1usize, once(Some(element.into_syntax().into()))),
-    )
-  }
-
-  pub fn with_extends(self, element: SdlEnumDeclaration) -> Self {
-    Self::unwrap_cast(
-      self
-        .syntax
-        .splice_slots(2usize..=2usize, once(Some(element.into_syntax().into()))),
     )
   }
 }
@@ -1302,7 +1311,7 @@ impl TypeCastExpression {
   }
 }
 impl UnqualifiedName {
-  pub fn with_ident_token(self, element: SyntaxToken) -> Self {
+  pub fn with_name_token(self, element: SyntaxToken) -> Self {
     Self::unwrap_cast(
       self
         .syntax

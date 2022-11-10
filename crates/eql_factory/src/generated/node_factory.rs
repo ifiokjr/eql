@@ -112,16 +112,16 @@ pub fn decimal_type(decimal_token: SyntaxToken) -> DecimalType {
   ))
 }
 pub fn dot_reference_name(
-  unqualified_name: UnqualifiedName,
+  name_token: SyntaxToken,
   dot_token: SyntaxToken,
-  unqualified_name: UnqualifiedName,
+  path_token: SyntaxToken,
 ) -> DotReferenceName {
   DotReferenceName::unwrap_cast(SyntaxNode::new_detached(
     EqlSyntaxKind::DOT_REFERENCE_NAME,
     [
-      Some(SyntaxElement::Node(unqualified_name.into_syntax())),
+      Some(SyntaxElement::Token(name_token)),
       Some(SyntaxElement::Token(dot_token)),
-      Some(SyntaxElement::Node(unqualified_name.into_syntax())),
+      Some(SyntaxElement::Token(path_token)),
     ],
   ))
 }
@@ -191,26 +191,29 @@ pub fn json_type(json_token: SyntaxToken) -> JsonType {
     [Some(SyntaxElement::Token(json_token))],
   ))
 }
-pub fn parameter_name(dollar_token: SyntaxToken, name: UnqualifiedName) -> ParameterName {
+pub fn parameter_name(
+  dollar_token: SyntaxToken,
+  parameter_name_token: SyntaxToken,
+) -> ParameterName {
   ParameterName::unwrap_cast(SyntaxNode::new_detached(
     EqlSyntaxKind::PARAMETER_NAME,
     [
       Some(SyntaxElement::Token(dollar_token)),
-      Some(SyntaxElement::Node(name.into_syntax())),
+      Some(SyntaxElement::Token(parameter_name_token)),
     ],
   ))
 }
 pub fn qualified_name(
-  namespace: UnqualifiedName,
+  name_token: SyntaxToken,
   namespace_token: SyntaxToken,
-  name: UnqualifiedName,
+  path_token: SyntaxToken,
 ) -> QualifiedName {
   QualifiedName::unwrap_cast(SyntaxNode::new_detached(
     EqlSyntaxKind::QUALIFIED_NAME,
     [
-      Some(SyntaxElement::Node(namespace.into_syntax())),
+      Some(SyntaxElement::Token(name_token)),
       Some(SyntaxElement::Token(namespace_token)),
-      Some(SyntaxElement::Node(name.into_syntax())),
+      Some(SyntaxElement::Token(path_token)),
     ],
   ))
 }
@@ -577,7 +580,7 @@ pub fn sdl_module(
   module_token: SyntaxToken,
   unqualified_name: UnqualifiedName,
   open_curly_token: SyntaxToken,
-  statements: SdlSchemaStatments,
+  statements: SdlSchemaStatements,
   close_curly_token: SyntaxToken,
 ) -> SdlModuleBuilder {
   SdlModuleBuilder {
@@ -593,7 +596,7 @@ pub struct SdlModuleBuilder {
   module_token: SyntaxToken,
   unqualified_name: UnqualifiedName,
   open_curly_token: SyntaxToken,
-  statements: SdlSchemaStatments,
+  statements: SdlSchemaStatements,
   close_curly_token: SyntaxToken,
   semicolon_token: Option<SyntaxToken>,
 }
@@ -767,16 +770,26 @@ impl SdlScalarBlockBuilder {
     ))
   }
 }
-pub fn sdl_scalar_extending(
+pub fn sdl_scalar_extending_enum(
   extending_token: SyntaxToken,
-  extends: SdlExtendingNames,
   extends: SdlEnumDeclaration,
-) -> SdlScalarExtending {
-  SdlScalarExtending::unwrap_cast(SyntaxNode::new_detached(
-    EqlSyntaxKind::SDL_SCALAR_EXTENDING,
+) -> SdlScalarExtendingEnum {
+  SdlScalarExtendingEnum::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::SDL_SCALAR_EXTENDING_ENUM,
     [
       Some(SyntaxElement::Token(extending_token)),
       Some(SyntaxElement::Node(extends.into_syntax())),
+    ],
+  ))
+}
+pub fn sdl_scalar_extending_type(
+  extending_token: SyntaxToken,
+  extends: SdlExtendingNames,
+) -> SdlScalarExtendingType {
+  SdlScalarExtendingType::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::SDL_SCALAR_EXTENDING_TYPE,
+    [
+      Some(SyntaxElement::Token(extending_token)),
       Some(SyntaxElement::Node(extends.into_syntax())),
     ],
   ))
@@ -1017,10 +1030,10 @@ pub fn type_cast_expression(
     ],
   ))
 }
-pub fn unqualified_name(ident_token: SyntaxToken) -> UnqualifiedName {
+pub fn unqualified_name(name_token: SyntaxToken) -> UnqualifiedName {
   UnqualifiedName::unwrap_cast(SyntaxNode::new_detached(
     EqlSyntaxKind::UNQUALIFIED_NAME,
-    [Some(SyntaxElement::Token(ident_token))],
+    [Some(SyntaxElement::Token(name_token))],
   ))
 }
 pub fn uuid_type(uuid_token: SyntaxToken) -> UuidType {
@@ -1155,13 +1168,13 @@ where
       .map(|item| Some(item.into_syntax().into())),
   ))
 }
-pub fn sdl_schema_statments<I>(items: I) -> SdlSchemaStatments
+pub fn sdl_schema_statements<I>(items: I) -> SdlSchemaStatements
 where
   I: IntoIterator<Item = SdlSchema>,
   I::IntoIter: ExactSizeIterator,
 {
-  SdlSchemaStatments::unwrap_cast(SyntaxNode::new_detached(
-    EqlSyntaxKind::SDL_SCHEMA_STATMENTS,
+  SdlSchemaStatements::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::SDL_SCHEMA_STATEMENTS,
     items
       .into_iter()
       .map(|item| Some(item.into_syntax().into())),

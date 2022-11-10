@@ -44,27 +44,34 @@ EmptyStatement = ';'
 
 
 // Names
-Name = UnqualifiedName | QualifiedName
-UnqualifiedName = 'ident'
+Name =
+  UnqualifiedName
+  | QualifiedName
+UnqualifiedName = name: 'ident'
 QualifiedName =
-  namespace: UnqualifiedName
+  name: 'ident'
   '::'
-  name: UnqualifiedName
-DotReferenceName = UnqualifiedName '.' UnqualifiedName
+  path: 'ident'
+
+DotReferenceName =
+  name: 'ident'
+  '.'
+  path: 'ident'
+
 ParameterName =
   '$'
-  name: UnqualifiedName
+  parameter_name: 'ident'
 
 SdlModule =
   'module'
   UnqualifiedName
   '{'
-  statements: SdlSchemaStatments
+  statements: SdlSchemaStatements
   '}'
   ';'?
 
 
-SdlSchemaStatments = SdlSchema*
+SdlSchemaStatements = SdlSchema*
 SdlSchema = EmptyStatement
   | SdlObjectSchema
   | SdlAnnotationSchema
@@ -140,8 +147,14 @@ SdlScalarSchema =
   extending: SdlScalarExtending?
   body: SdlScalarBody
 SdlScalarExtending =
+  SdlScalarExtendingType
+  | SdlScalarExtendingEnum
+SdlScalarExtendingType =
   'extending'
-  extends: (SdlExtendingNames | SdlEnumDeclaration)
+  extends: SdlExtendingNames
+SdlScalarExtendingEnum =
+  'extending'
+  extends: SdlEnumDeclaration
 SdlScalarBody = EmptyStatement | SdlScalarBlock
 SdlScalarBlock =
   '{'

@@ -71,12 +71,12 @@ const LITERALS: &'_ [&'_ str] = &[
 
 const TOKENS: &'_ [&'_ str] = &["ERROR", "IDENT", "NEWLINE", "WHITESPACE", "COMMENT"];
 const SHARED_KEYWORDS: &'_ [&'_ str] = &[
-  "__source__",
-  "__subject__",
-  "__type__",
-  "__std__",
-  "__edgedbsys__",
-  "__edgedbtpl__",
+  // "__source__",
+  // "__subject__",
+  // "__type__",
+  // "__std__",
+  // "__edgedbsys__",
+  // "__edgedbtpl__",
   "abstract",
   "access",
   "alias",
@@ -89,6 +89,7 @@ const SHARED_KEYWORDS: &'_ [&'_ str] = &[
   "by",
   "commit",
   "configure",
+  "ddl",
   "delete",
   "describe",
   "detached",
@@ -117,11 +118,13 @@ const SHARED_KEYWORDS: &'_ [&'_ str] = &[
   "optional",
   "or",
   "policy",
+  "sdl",
   "select",
   "set",
   "single",
   "start",
   "std",
+  "to",
   "true",
   "typeof",
   "update",
@@ -135,6 +138,7 @@ const SDL_KEYWORDS: &'_ [&'_ str] = &[
   "link",
   "multi",
   "sequence",
+  "type",
   "using",
   "volatility",
 ];
@@ -158,7 +162,6 @@ const RESERVED_KEYWORDS: &'_ [&'_ str] = &[
   "cube",
   "current",
   "database",
-  "ddl",
   "declare",
   "default",
   "deferrable",
@@ -212,7 +215,6 @@ const RESERVED_KEYWORDS: &'_ [&'_ str] = &[
   "rollup",
   "scalar",
   "schema",
-  "sdl",
   "serializable",
   "session",
   "source",
@@ -222,9 +224,7 @@ const RESERVED_KEYWORDS: &'_ [&'_ str] = &[
   "ternary",
   "text",
   "then",
-  "to",
   "transaction",
-  "type",
   "unless",
   "verbose",
   "version",
@@ -444,11 +444,14 @@ pub struct AstEnumSrc {
 
 #[cfg(test)]
 mod tests {
+  use std::collections::HashSet;
+
   use anyhow::Result;
   use heck::ToShoutySnakeCase;
   use quote::quote;
 
   use crate::codegen::generate_ast::load_ast;
+  use crate::codegen::generate_ast::load_grammar;
   use crate::codegen::update;
   use crate::codegen::Mode;
   use crate::format_files;
@@ -457,24 +460,32 @@ mod tests {
   #[ignore]
   #[test]
   fn generate_nodes() -> Result<()> {
+    let grammar = load_grammar()?;
     let ast = load_ast()?;
-    let mut names: Vec<_> = vec![];
+    let mut unique_names = HashSet::new();
+
+    for node in grammar.iter() {
+      unique_names.insert(grammar[node].name.to_shouty_snake_case());
+    }
 
     for node in ast.nodes.iter() {
-      names.push(node.name.to_shouty_snake_case());
+      unique_names.insert(node.name.to_shouty_snake_case());
     }
 
     for union in ast.unions.iter() {
-      names.push(union.name.to_shouty_snake_case());
+      unique_names.insert(union.name.to_shouty_snake_case());
     }
 
     for list in ast.lists.values() {
-      names.push(list.element_name.to_shouty_snake_case());
+      unique_names.insert(format!("{}_LIST", list.element_name.to_shouty_snake_case()));
     }
 
     for unknown in ast.unknowns.iter() {
-      names.push(unknown.to_shouty_snake_case());
+      unique_names.insert(unknown.to_shouty_snake_case());
     }
+
+    let mut names = Vec::from_iter(unique_names);
+    names.sort_unstable();
 
     let ident = quote! {
       pub(crate) const NODES: &'_ [&'_ str] = &[

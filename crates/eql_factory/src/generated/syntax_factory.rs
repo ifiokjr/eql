@@ -255,7 +255,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
         let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
         let mut current_element = elements.next();
         if let Some(element) = &current_element {
-          if UnqualifiedName::can_cast(element.kind()) {
+          if element.kind() == IDENT {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -269,7 +269,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.next_slot();
         if let Some(element) = &current_element {
-          if UnqualifiedName::can_cast(element.kind()) {
+          if element.kind() == IDENT {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -492,7 +492,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.next_slot();
         if let Some(element) = &current_element {
-          if UnqualifiedName::can_cast(element.kind()) {
+          if element.kind() == IDENT {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -508,7 +508,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
         let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
         let mut current_element = elements.next();
         if let Some(element) = &current_element {
-          if UnqualifiedName::can_cast(element.kind()) {
+          if element.kind() == IDENT {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -522,7 +522,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.next_slot();
         if let Some(element) = &current_element {
-          if UnqualifiedName::can_cast(element.kind()) {
+          if element.kind() == IDENT {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -1151,7 +1151,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.next_slot();
         if let Some(element) = &current_element {
-          if SdlSchemaStatments::can_cast(element.kind()) {
+          if SdlSchemaStatements::can_cast(element.kind()) {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -1354,9 +1354,35 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.into_node(SDL_SCALAR_BLOCK, children)
       }
-      SDL_SCALAR_EXTENDING => {
+      SDL_SCALAR_EXTENDING_ENUM => {
         let mut elements = (&children).into_iter();
-        let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
+        let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
+        let mut current_element = elements.next();
+        if let Some(element) = &current_element {
+          if element.kind() == T![extending] {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if let Some(element) = &current_element {
+          if SdlEnumDeclaration::can_cast(element.kind()) {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if current_element.is_some() {
+          return RawSyntaxNode::new(
+            SDL_SCALAR_EXTENDING_ENUM.to_unknown(),
+            children.into_iter().map(Some),
+          );
+        }
+        slots.into_node(SDL_SCALAR_EXTENDING_ENUM, children)
+      }
+      SDL_SCALAR_EXTENDING_TYPE => {
+        let mut elements = (&children).into_iter();
+        let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
         let mut current_element = elements.next();
         if let Some(element) = &current_element {
           if element.kind() == T![extending] {
@@ -1372,20 +1398,13 @@ impl SyntaxFactory for EqlSyntaxFactory {
           }
         }
         slots.next_slot();
-        if let Some(element) = &current_element {
-          if SdlEnumDeclaration::can_cast(element.kind()) {
-            slots.mark_present();
-            current_element = elements.next();
-          }
-        }
-        slots.next_slot();
         if current_element.is_some() {
           return RawSyntaxNode::new(
-            SDL_SCALAR_EXTENDING.to_unknown(),
+            SDL_SCALAR_EXTENDING_TYPE.to_unknown(),
             children.into_iter().map(Some),
           );
         }
-        slots.into_node(SDL_SCALAR_EXTENDING, children)
+        slots.into_node(SDL_SCALAR_EXTENDING_TYPE, children)
       }
       SDL_SCALAR_SCHEMA => {
         let mut elements = (&children).into_iter();
@@ -1783,7 +1802,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
       SDL_SCHEMA_CONSTRAIN_PARAM_LIST => {
         Self::make_node_list_syntax(kind, children, SdlSchemaConstrainParam::can_cast)
       }
-      SDL_SCHEMA_STATMENTS => Self::make_node_list_syntax(kind, children, SdlSchema::can_cast),
+      SDL_SCHEMA_STATEMENTS => Self::make_node_list_syntax(kind, children, SdlSchema::can_cast),
       TUPLE_TYPE_MEMBERS => {
         Self::make_separated_list_syntax(kind, children, TypeExpression::can_cast, T ! [,], false)
       }
