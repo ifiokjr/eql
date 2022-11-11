@@ -68,10 +68,7 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
   let all_keywords_values = grammar.keywords.to_vec();
   let all_keywords_idents = all_keywords_values
     .iter()
-    .map(|kw| {
-      println!("kw: {}", kw);
-      format_ident!("{}", kw)
-    })
+    .map(|kw| format_ident!("{}", kw))
     .collect::<Vec<_>>();
   let all_keywords = all_keywords_values
     .iter()

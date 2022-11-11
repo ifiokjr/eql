@@ -822,7 +822,7 @@ impl SdlModule {
     )
   }
 
-  pub fn with_statements(self, element: SdlSchemaStatements) -> Self {
+  pub fn with_statements(self, element: SdlSchemaList) -> Self {
     Self::unwrap_cast(
       self
         .syntax

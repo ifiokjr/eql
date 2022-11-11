@@ -1169,7 +1169,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.next_slot();
         if let Some(element) = &current_element {
-          if SdlSchemaStatements::can_cast(element.kind()) {
+          if SdlSchemaList::can_cast(element.kind()) {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -1854,7 +1854,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
       SDL_SCHEMA_CONSTRAIN_PARAM_LIST => {
         Self::make_node_list_syntax(kind, children, SdlSchemaConstrainParam::can_cast)
       }
-      SDL_SCHEMA_STATEMENTS => Self::make_node_list_syntax(kind, children, SdlSchema::can_cast),
+      SDL_SCHEMA_LIST => Self::make_node_list_syntax(kind, children, SdlSchema::can_cast),
       TUPLE_TYPE_MEMBERS => {
         Self::make_separated_list_syntax(kind, children, TypeExpression::can_cast, T ! [,], false)
       }

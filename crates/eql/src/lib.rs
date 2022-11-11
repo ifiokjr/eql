@@ -1,3 +1,3 @@
-pub fn awesome() {}
-
 pub mod parser;
+
+pub fn awesome() {}

@@ -9,10 +9,10 @@ edition = "2021"
 combine = "4.6.6"
 edgedb-derive = "0.4.0"
 edgedb-tokio = "0.3.0"
-edgeql-parser = { git = "https://github.com/edgedb/edgedb", rev = "7045e20d7154414b227c1d9aef5aa42210a650e2" }
-indexmap = "1.9.1"
+edgeql-parser = { workspace = true }
+indexmap = { workspace = true }
 strum = { version = "0.24.1", features = ["derive"] }
 thiserror = "1.0.37"
 
 [dev-dependencies]
-insta.workspace = true
+insta = { workspace = true }

@@ -1,7 +1,21 @@
 [workspace]
 members = ["crates/*", "xtask"]
-default-members = ["crates/*"]
+default-members = ["crates/*", "xtask"]
 
 [workspace.dependencies]
+anyhow = "1.0.66"
+countme = "3.0.1"
+dashmap = "5.4.0"
+edgedb-derive = { git = "https://github.com/edgedb/edgedb-rust", rev = "431d62a" }
+edgedb-errors = { git = "https://github.com/edgedb/edgedb-rust", rev = "431d62a" }
+edgedb-protocol = { git = "https://github.com/edgedb/edgedb-rust", rev = "431d62a" }
+edgedb-tokio = { git = "https://github.com/edgedb/edgedb-rust", rev = "431d62a" }
+edgeql-parser = { git = "https://github.com/edgedb/edgedb", rev = "555a77a0f" }
+indexmap = "1.9.1"
 insta = "1.21.0"
-rome_rowan = { git = "https://github.com/rome/tools", rev = "b6af8f0222" }
+rome_console = { git = "https://github.com/rome/tools", rev = "84c53d413e" }
+rome_diagnostics = { git = "https://github.com/rome/tools", rev = "84c53d413e" }
+rome_rowan = { git = "https://github.com/rome/tools", rev = "84c53d413e" }
+rustc-hash = "1.1.0"
+tokio = { version = "1.21.2" }
+tracing = { version = "0.1.37" }

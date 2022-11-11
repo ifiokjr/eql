@@ -6,12 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.66"
+anyhow = { workspace = true }
 cargo_metadata = "0.15.1"
 cargo_toml = "0.13.0"
-clap = { version = "4.0.19", features = ["derive"] }
+clap = { version = "4.0.22", features = ["derive"] }
 dprint = "0.32.2"
-env_logger = "0.9.1"
+env_logger = "0.9.3"
 fstrings = "0.2.3"
 heck = "0.4.0"
 home = "0.5.4"
@@ -19,10 +19,16 @@ log = "0.4.17"
 owo-colors = "3.5.0"
 proc-macro2 = { version = "1.0.47", features = ["span-locations"] }
 quote = "1.0.21"
-regex = "1.6.0"
+regex = "1.7.0"
 ungrammar = "1.16.1"
 version_check = "0.9.4"
 xshell = "0.2.2"
+
+[build-dependencies]
+anyhow = { workspace = true }
+heck = "0.4.0"
+ungrammar = "1.16.1"
+quote = "1.0.21"
 
 [dev-dependencies]
 cargo-edit = "0.11.5"

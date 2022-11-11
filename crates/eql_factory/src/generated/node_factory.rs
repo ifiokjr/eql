@@ -586,7 +586,7 @@ pub fn sdl_module(
   module_token: SyntaxToken,
   unqualified_name: UnqualifiedName,
   open_curly_token: SyntaxToken,
-  statements: SdlSchemaStatements,
+  statements: SdlSchemaList,
   close_curly_token: SyntaxToken,
 ) -> SdlModuleBuilder {
   SdlModuleBuilder {
@@ -602,7 +602,7 @@ pub struct SdlModuleBuilder {
   module_token: SyntaxToken,
   unqualified_name: UnqualifiedName,
   open_curly_token: SyntaxToken,
-  statements: SdlSchemaStatements,
+  statements: SdlSchemaList,
   close_curly_token: SyntaxToken,
   semicolon_token: Option<SyntaxToken>,
 }
@@ -1210,13 +1210,13 @@ where
       .map(|item| Some(item.into_syntax().into())),
   ))
 }
-pub fn sdl_schema_statements<I>(items: I) -> SdlSchemaStatements
+pub fn sdl_schema_list<I>(items: I) -> SdlSchemaList
 where
   I: IntoIterator<Item = SdlSchema>,
   I::IntoIter: ExactSizeIterator,
 {
-  SdlSchemaStatements::unwrap_cast(SyntaxNode::new_detached(
-    EqlSyntaxKind::SDL_SCHEMA_STATEMENTS,
+  SdlSchemaList::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::SDL_SCHEMA_LIST,
     items
       .into_iter()
       .map(|item| Some(item.into_syntax().into())),

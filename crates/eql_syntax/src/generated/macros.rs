@@ -333,8 +333,8 @@ macro_rules! map_syntax_node {
             let $pattern = unsafe { $crate::SdlSchemaConstrainParamList::new_unchecked(node) };
             $body
           }
-          $crate::EqlSyntaxKind::SDL_SCHEMA_STATEMENTS => {
-            let $pattern = unsafe { $crate::SdlSchemaStatements::new_unchecked(node) };
+          $crate::EqlSyntaxKind::SDL_SCHEMA_LIST => {
+            let $pattern = unsafe { $crate::SdlSchemaList::new_unchecked(node) };
             $body
           }
           $crate::EqlSyntaxKind::TUPLE_TYPE_MEMBERS => {

@@ -81,11 +81,11 @@ SdlModule =
   'module'
   UnqualifiedName
   '{'
-  statements: SdlSchemaStatements
+  statements: SdlSchemaList
   '}'
   ';'?
 
-SdlSchemaStatements = SdlSchema*
+SdlSchemaList = SdlSchema*
 SdlSchema = EmptyStatement
   | SdlObjectSchema
   | SdlAnnotationSchema

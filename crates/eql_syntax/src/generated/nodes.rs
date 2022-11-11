@@ -2008,7 +2008,7 @@ impl SdlModule {
     support::required_token(&self.syntax, 2usize)
   }
 
-  pub fn statements(&self) -> SdlSchemaStatements {
+  pub fn statements(&self) -> SdlSchemaList {
     support::list(&self.syntax, 3usize)
   }
 
@@ -2034,7 +2034,7 @@ pub struct SdlModuleFields {
   pub module_token: SyntaxResult<SyntaxToken>,
   pub unqualified_name: SyntaxResult<UnqualifiedName>,
   pub open_curly_token: SyntaxResult<SyntaxToken>,
-  pub statements: SdlSchemaStatements,
+  pub statements: SdlSchemaList,
   pub close_curly_token: SyntaxResult<SyntaxToken>,
   pub semicolon_token: Option<SyntaxToken>,
 }
@@ -10175,10 +10175,10 @@ impl IntoIterator for SdlSchemaConstrainParamList {
   }
 }
 #[derive(Clone, Eq, PartialEq, Hash)]
-pub struct SdlSchemaStatements {
+pub struct SdlSchemaList {
   syntax_list: SyntaxList,
 }
-impl SdlSchemaStatements {
+impl SdlSchemaList {
   #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
   #[doc = r""]
   #[doc = r" # Safety"]
@@ -10191,19 +10191,19 @@ impl SdlSchemaStatements {
     }
   }
 }
-impl AstNode for SdlSchemaStatements {
+impl AstNode for SdlSchemaList {
   type Language = Language;
 
   const KIND_SET: SyntaxKindSet<Language> =
-    SyntaxKindSet::from_raw(RawSyntaxKind(SDL_SCHEMA_STATEMENTS as u16));
+    SyntaxKindSet::from_raw(RawSyntaxKind(SDL_SCHEMA_LIST as u16));
 
   fn can_cast(kind: SyntaxKind) -> bool {
-    kind == SDL_SCHEMA_STATEMENTS
+    kind == SDL_SCHEMA_LIST
   }
 
-  fn cast(syntax: SyntaxNode) -> Option<SdlSchemaStatements> {
+  fn cast(syntax: SyntaxNode) -> Option<SdlSchemaList> {
     if Self::can_cast(syntax.kind()) {
-      Some(SdlSchemaStatements {
+      Some(SdlSchemaList {
         syntax_list: syntax.into_list(),
       })
     } else {
@@ -10220,7 +10220,7 @@ impl AstNode for SdlSchemaStatements {
   }
 }
 #[cfg(feature = "serde")]
-impl Serialize for SdlSchemaStatements {
+impl Serialize for SdlSchemaList {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
     S: Serializer,
@@ -10232,7 +10232,7 @@ impl Serialize for SdlSchemaStatements {
     seq.end()
   }
 }
-impl AstNodeList for SdlSchemaStatements {
+impl AstNodeList for SdlSchemaList {
   type Language = Language;
   type Node = SdlSchema;
 
@@ -10244,13 +10244,13 @@ impl AstNodeList for SdlSchemaStatements {
     self.syntax_list
   }
 }
-impl Debug for SdlSchemaStatements {
+impl Debug for SdlSchemaList {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    f.write_str("SdlSchemaStatements ")?;
+    f.write_str("SdlSchemaList ")?;
     f.debug_list().entries(self.iter()).finish()
   }
 }
-impl IntoIterator for &SdlSchemaStatements {
+impl IntoIterator for &SdlSchemaList {
   type IntoIter = AstNodeListIterator<Language, SdlSchema>;
   type Item = SdlSchema;
 
@@ -10258,7 +10258,7 @@ impl IntoIterator for &SdlSchemaStatements {
     self.iter()
   }
 }
-impl IntoIterator for SdlSchemaStatements {
+impl IntoIterator for SdlSchemaList {
   type IntoIter = AstNodeListIterator<Language, SdlSchema>;
   type Item = SdlSchema;
 

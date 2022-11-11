@@ -58,6 +58,7 @@ const PUNCTUATION: &'_ [(&'_ str, &'_ str)] = &[
   ("&", "AMPERSAND"),
   ("|", "PIPE"),
   ("@", "AT"),
+  ("`", "BACKTICK"),
   ("$", "DOLLAR"),
 ];
 
@@ -453,69 +454,4 @@ pub struct AstEnumSrc {
   pub name: String,
   // pub traits: Vec<String>,
   pub variants: Vec<String>,
-}
-
-#[cfg(test)]
-mod tests {
-  use std::collections::HashSet;
-
-  use anyhow::Result;
-  use heck::ToShoutySnakeCase;
-  use quote::quote;
-
-  use crate::codegen::generate_ast::load_ast;
-  use crate::codegen::generate_ast::load_grammar;
-  use crate::codegen::update;
-  use crate::codegen::Mode;
-  use crate::format_files;
-  use crate::project_root;
-
-  #[ignore]
-  #[test]
-  fn generate_nodes() -> Result<()> {
-    let grammar = load_grammar()?;
-    let ast = load_ast()?;
-    let mut unique_names = HashSet::new();
-
-    for node in grammar.iter() {
-      unique_names.insert(grammar[node].name.to_shouty_snake_case());
-    }
-
-    for token in grammar.tokens() {
-      println!("token: {}", grammar[token].name);
-    }
-
-    for node in ast.nodes.iter() {
-      unique_names.insert(node.name.to_shouty_snake_case());
-    }
-
-    for union in ast.unions.iter() {
-      unique_names.insert(union.name.to_shouty_snake_case());
-    }
-
-    for list in ast.lists.values() {
-      unique_names.insert(format!("{}_LIST", list.element_name.to_shouty_snake_case()));
-    }
-
-    for unknown in ast.unknowns.iter() {
-      unique_names.insert(unknown.to_shouty_snake_case());
-    }
-
-    let mut names = Vec::from_iter(unique_names);
-    names.sort_unstable();
-
-    let ident = quote! {
-      pub(crate) const NODES: &'_ [&'_ str] = &[
-        #(#names),*
-      ];
-    };
-
-    let mode = Mode::Overwrite;
-    let nodes_file = project_root().join("xtask/src/codegen/nodes.rs");
-    let contents = ident.to_string();
-    update(nodes_file.as_path(), &contents, &mode)?;
-    format_files(vec![nodes_file.to_string_lossy().into()])?;
-
-    Ok(())
-  }
 }
