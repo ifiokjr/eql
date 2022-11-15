@@ -7,7 +7,17 @@ pub use crate::generated::node_factory::*;
 
 /// Create a new identifier token with no attached trivia
 pub fn ident(text: &str) -> EqlSyntaxToken {
-  EqlSyntaxToken::new_detached(EqlSyntaxKind::IDENT, text, [], [])
+  EqlSyntaxToken::new_detached(EqlSyntaxKind::PLAIN_IDENT, text, [], [])
+}
+
+/// Create a new quoted identifier token with no attached trivia
+pub fn quoted_ident(text: &str) -> EqlSyntaxToken {
+  EqlSyntaxToken::new_detached(EqlSyntaxKind::QUOTED_IDENT, text, [], [])
+}
+
+/// Create a query parameter token with no attached trivia
+pub fn query_parameter(text: &str) -> EqlSyntaxToken {
+  EqlSyntaxToken::new_detached(EqlSyntaxKind::QUERY_PARAMETER, text, [], [])
 }
 
 /// Create a new string literal token with no attached trivia
