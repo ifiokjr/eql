@@ -146,11 +146,11 @@ impl DecimalType {
   }
 }
 impl DotReferenceName {
-  pub fn with_name_token(self, element: SyntaxToken) -> Self {
+  pub fn with_name(self, element: Ident) -> Self {
     Self::unwrap_cast(
       self
         .syntax
-        .splice_slots(0usize..=0usize, once(Some(element.into()))),
+        .splice_slots(0usize..=0usize, once(Some(element.into_syntax().into()))),
     )
   }
 
@@ -162,11 +162,11 @@ impl DotReferenceName {
     )
   }
 
-  pub fn with_path_token(self, element: SyntaxToken) -> Self {
+  pub fn with_path(self, element: Ident) -> Self {
     Self::unwrap_cast(
       self
         .syntax
-        .splice_slots(2usize..=2usize, once(Some(element.into()))),
+        .splice_slots(2usize..=2usize, once(Some(element.into_syntax().into()))),
     )
   }
 }
@@ -233,6 +233,23 @@ impl FloatThirtyTwoType {
     )
   }
 }
+impl Ident {
+  pub fn with_plain_ident_token(self, element: SyntaxToken) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(0usize..=0usize, once(Some(element.into()))),
+    )
+  }
+
+  pub fn with_quoted_ident_token(self, element: SyntaxToken) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(1usize..=1usize, once(Some(element.into()))),
+    )
+  }
+}
 impl IntLiteralExpression {
   pub fn with_value_token(self, element: SyntaxToken) -> Self {
     Self::unwrap_cast(
@@ -278,6 +295,15 @@ impl JsonType {
     )
   }
 }
+impl OutgoingPathStep {
+  pub fn with_dot_token(self, element: SyntaxToken) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(0usize..=0usize, once(Some(element.into()))),
+    )
+  }
+}
 impl ParameterName {
   pub fn with_dollar_token(self, element: SyntaxToken) -> Self {
     Self::unwrap_cast(
@@ -295,12 +321,21 @@ impl ParameterName {
     )
   }
 }
-impl QualifiedName {
-  pub fn with_name_token(self, element: SyntaxToken) -> Self {
+impl PathStep {
+  pub fn with_outgoing_path_step(self, element: OutgoingPathStep) -> Self {
     Self::unwrap_cast(
       self
         .syntax
-        .splice_slots(0usize..=0usize, once(Some(element.into()))),
+        .splice_slots(0usize..=0usize, once(Some(element.into_syntax().into()))),
+    )
+  }
+}
+impl QualifiedName {
+  pub fn with_name(self, element: Ident) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(0usize..=0usize, once(Some(element.into_syntax().into()))),
     )
   }
 
@@ -312,11 +347,11 @@ impl QualifiedName {
     )
   }
 
-  pub fn with_path_token(self, element: SyntaxToken) -> Self {
+  pub fn with_path(self, element: Ident) -> Self {
     Self::unwrap_cast(
       self
         .syntax
-        .splice_slots(2usize..=2usize, once(Some(element.into()))),
+        .splice_slots(2usize..=2usize, once(Some(element.into_syntax().into()))),
     )
   }
 }
@@ -1337,12 +1372,29 @@ impl TypeCastExpression {
     )
   }
 }
-impl UnqualifiedName {
-  pub fn with_name_token(self, element: SyntaxToken) -> Self {
+impl TypeCastTarget {
+  pub fn with_any_literal_expression(self, element: AnyLiteralExpression) -> Self {
     Self::unwrap_cast(
       self
         .syntax
-        .splice_slots(0usize..=0usize, once(Some(element.into()))),
+        .splice_slots(0usize..=0usize, once(Some(element.into_syntax().into()))),
+    )
+  }
+
+  pub fn with_query_parameter_token(self, element: SyntaxToken) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(1usize..=1usize, once(Some(element.into()))),
+    )
+  }
+}
+impl UnqualifiedName {
+  pub fn with_name(self, element: Ident) -> Self {
+    Self::unwrap_cast(
+      self
+        .syntax
+        .splice_slots(0usize..=0usize, once(Some(element.into_syntax().into()))),
     )
   }
 }

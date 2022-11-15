@@ -93,6 +93,10 @@ macro_rules! map_syntax_node {
             let $pattern = unsafe { $crate::FloatThirtyTwoType::new_unchecked(node) };
             $body
           }
+          $crate::EqlSyntaxKind::IDENT => {
+            let $pattern = unsafe { $crate::Ident::new_unchecked(node) };
+            $body
+          }
           $crate::EqlSyntaxKind::INT_LITERAL_EXPRESSION => {
             let $pattern = unsafe { $crate::IntLiteralExpression::new_unchecked(node) };
             $body
@@ -113,8 +117,16 @@ macro_rules! map_syntax_node {
             let $pattern = unsafe { $crate::JsonType::new_unchecked(node) };
             $body
           }
+          $crate::EqlSyntaxKind::OUTGOING_PATH_STEP => {
+            let $pattern = unsafe { $crate::OutgoingPathStep::new_unchecked(node) };
+            $body
+          }
           $crate::EqlSyntaxKind::PARAMETER_NAME => {
             let $pattern = unsafe { $crate::ParameterName::new_unchecked(node) };
+            $body
+          }
+          $crate::EqlSyntaxKind::PATH_STEP => {
+            let $pattern = unsafe { $crate::PathStep::new_unchecked(node) };
             $body
           }
           $crate::EqlSyntaxKind::QUALIFIED_NAME => {
@@ -259,6 +271,10 @@ macro_rules! map_syntax_node {
           }
           $crate::EqlSyntaxKind::TYPE_CAST_EXPRESSION => {
             let $pattern = unsafe { $crate::TypeCastExpression::new_unchecked(node) };
+            $body
+          }
+          $crate::EqlSyntaxKind::TYPE_CAST_TARGET => {
+            let $pattern = unsafe { $crate::TypeCastTarget::new_unchecked(node) };
             $body
           }
           $crate::EqlSyntaxKind::UNQUALIFIED_NAME => {

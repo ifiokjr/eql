@@ -55,16 +55,20 @@ EmptyStatement = ';'
 Name =
   UnqualifiedName
   | QualifiedName
-UnqualifiedName = name: 'ident'
+UnqualifiedName = name: Ident
+Ident =
+  'plain_ident'
+  | 'quoted_ident'
+
 QualifiedName =
-  name: 'ident'
+  name: Ident
   '::'
-  path: 'ident'
+  path: Ident
 
 DotReferenceName =
-  name: 'ident'
+  name: Ident
   '.'
-  path: 'ident'
+  path: Ident
 
 ParameterName =
   '$'
@@ -321,7 +325,7 @@ TypeCastExpression =
 
 TypeCastTarget =
   AnyLiteralExpression
-  | ParameterName
+  | 'query_parameter'
 
 
 TypeExpression =
@@ -393,6 +397,13 @@ TupleType =
   members: TupleTypeMembers
   '>'
 TupleTypeMembers = (TypeExpression (',' TypeExpression)*)
+
+PathStep =
+  OutgoingPathStep
+
+OutgoingPathStep =
+  '.'
+
 
 //
 // DDL

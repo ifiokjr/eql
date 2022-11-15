@@ -34,4 +34,4 @@ quote = "1.0.21"
 cargo-edit = "0.11.5"
 cargo-insta = "1.21.0"
 expectest = "0.12.0"
-insta.workspace = true
+insta = { workspace = true }

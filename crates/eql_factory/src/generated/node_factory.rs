@@ -111,17 +111,13 @@ pub fn decimal_type(decimal_token: SyntaxToken) -> DecimalType {
     [Some(SyntaxElement::Token(decimal_token))],
   ))
 }
-pub fn dot_reference_name(
-  name_token: SyntaxToken,
-  dot_token: SyntaxToken,
-  path_token: SyntaxToken,
-) -> DotReferenceName {
+pub fn dot_reference_name(name: Ident, dot_token: SyntaxToken, path: Ident) -> DotReferenceName {
   DotReferenceName::unwrap_cast(SyntaxNode::new_detached(
     EqlSyntaxKind::DOT_REFERENCE_NAME,
     [
-      Some(SyntaxElement::Token(name_token)),
+      Some(SyntaxElement::Node(name.into_syntax())),
       Some(SyntaxElement::Token(dot_token)),
-      Some(SyntaxElement::Token(path_token)),
+      Some(SyntaxElement::Node(path.into_syntax())),
     ],
   ))
 }
@@ -167,6 +163,15 @@ pub fn float_thirty_two_type(float32_token: SyntaxToken) -> FloatThirtyTwoType {
     [Some(SyntaxElement::Token(float32_token))],
   ))
 }
+pub fn ident(plain_ident_token: SyntaxToken, quoted_ident_token: SyntaxToken) -> Ident {
+  Ident::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::IDENT,
+    [
+      Some(SyntaxElement::Token(plain_ident_token)),
+      Some(SyntaxElement::Token(quoted_ident_token)),
+    ],
+  ))
+}
 pub fn int_literal_expression(value_token: SyntaxToken) -> IntLiteralExpression {
   IntLiteralExpression::unwrap_cast(SyntaxNode::new_detached(
     EqlSyntaxKind::INT_LITERAL_EXPRESSION,
@@ -197,6 +202,12 @@ pub fn json_type(json_token: SyntaxToken) -> JsonType {
     [Some(SyntaxElement::Token(json_token))],
   ))
 }
+pub fn outgoing_path_step(dot_token: SyntaxToken) -> OutgoingPathStep {
+  OutgoingPathStep::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::OUTGOING_PATH_STEP,
+    [Some(SyntaxElement::Token(dot_token))],
+  ))
+}
 pub fn parameter_name(
   dollar_token: SyntaxToken,
   parameter_name_token: SyntaxToken,
@@ -209,17 +220,19 @@ pub fn parameter_name(
     ],
   ))
 }
-pub fn qualified_name(
-  name_token: SyntaxToken,
-  namespace_token: SyntaxToken,
-  path_token: SyntaxToken,
-) -> QualifiedName {
+pub fn path_step(outgoing_path_step: OutgoingPathStep) -> PathStep {
+  PathStep::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::PATH_STEP,
+    [Some(SyntaxElement::Node(outgoing_path_step.into_syntax()))],
+  ))
+}
+pub fn qualified_name(name: Ident, namespace_token: SyntaxToken, path: Ident) -> QualifiedName {
   QualifiedName::unwrap_cast(SyntaxNode::new_detached(
     EqlSyntaxKind::QUALIFIED_NAME,
     [
-      Some(SyntaxElement::Token(name_token)),
+      Some(SyntaxElement::Node(name.into_syntax())),
       Some(SyntaxElement::Token(namespace_token)),
-      Some(SyntaxElement::Token(path_token)),
+      Some(SyntaxElement::Node(path.into_syntax())),
     ],
   ))
 }
@@ -1048,10 +1061,22 @@ pub fn type_cast_expression(
     ],
   ))
 }
-pub fn unqualified_name(name_token: SyntaxToken) -> UnqualifiedName {
+pub fn type_cast_target(
+  any_literal_expression: AnyLiteralExpression,
+  query_parameter_token: SyntaxToken,
+) -> TypeCastTarget {
+  TypeCastTarget::unwrap_cast(SyntaxNode::new_detached(
+    EqlSyntaxKind::TYPE_CAST_TARGET,
+    [
+      Some(SyntaxElement::Node(any_literal_expression.into_syntax())),
+      Some(SyntaxElement::Token(query_parameter_token)),
+    ],
+  ))
+}
+pub fn unqualified_name(name: Ident) -> UnqualifiedName {
   UnqualifiedName::unwrap_cast(SyntaxNode::new_detached(
     EqlSyntaxKind::UNQUALIFIED_NAME,
-    [Some(SyntaxElement::Token(name_token))],
+    [Some(SyntaxElement::Node(name.into_syntax()))],
   ))
 }
 pub fn uuid_type(uuid_token: SyntaxToken) -> UuidType {

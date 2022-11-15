@@ -12,7 +12,7 @@ serde = { version = "1.0.147", features = ["derive"], optional = true }
 
 [dev-dependencies]
 eql_factory = { path = "../eql_factory" }
-insta.workspace = true
+insta = { workspace = true }
 
 [features]
 serde = ["dep:serde", "schemars", "rome_rowan/serde"]

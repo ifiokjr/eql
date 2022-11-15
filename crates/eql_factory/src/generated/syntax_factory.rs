@@ -257,7 +257,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
         let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
         let mut current_element = elements.next();
         if let Some(element) = &current_element {
-          if element.kind() == IDENT {
+          if Ident::can_cast(element.kind()) {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -271,7 +271,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.next_slot();
         if let Some(element) = &current_element {
-          if element.kind() == IDENT {
+          if Ident::can_cast(element.kind()) {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -406,6 +406,29 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.into_node(FLOAT_THIRTY_TWO_TYPE, children)
       }
+      IDENT => {
+        let mut elements = (&children).into_iter();
+        let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
+        let mut current_element = elements.next();
+        if let Some(element) = &current_element {
+          if element.kind() == PLAIN_IDENT {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if let Some(element) = &current_element {
+          if element.kind() == QUOTED_IDENT {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if current_element.is_some() {
+          return RawSyntaxNode::new(IDENT.to_unknown(), children.into_iter().map(Some));
+        }
+        slots.into_node(IDENT, children)
+      }
       INT_LITERAL_EXPRESSION => {
         let mut elements = (&children).into_iter();
         let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
@@ -498,19 +521,38 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.into_node(JSON_TYPE, children)
       }
+      OUTGOING_PATH_STEP => {
+        let mut elements = (&children).into_iter();
+        let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
+        let mut current_element = elements.next();
+        if let Some(element) = &current_element {
+          if element.kind() == T ! [.] {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if current_element.is_some() {
+          return RawSyntaxNode::new(
+            OUTGOING_PATH_STEP.to_unknown(),
+            children.into_iter().map(Some),
+          );
+        }
+        slots.into_node(OUTGOING_PATH_STEP, children)
+      }
       PARAMETER_NAME => {
         let mut elements = (&children).into_iter();
         let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
         let mut current_element = elements.next();
         if let Some(element) = &current_element {
-          if element.kind() == T ! [$] {
+          if element.kind() == T!['$'] {
             slots.mark_present();
             current_element = elements.next();
           }
         }
         slots.next_slot();
         if let Some(element) = &current_element {
-          if element.kind() == IDENT {
+          if element.kind() == T![ident] {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -521,12 +563,28 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.into_node(PARAMETER_NAME, children)
       }
+      PATH_STEP => {
+        let mut elements = (&children).into_iter();
+        let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
+        let mut current_element = elements.next();
+        if let Some(element) = &current_element {
+          if OutgoingPathStep::can_cast(element.kind()) {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if current_element.is_some() {
+          return RawSyntaxNode::new(PATH_STEP.to_unknown(), children.into_iter().map(Some));
+        }
+        slots.into_node(PATH_STEP, children)
+      }
       QUALIFIED_NAME => {
         let mut elements = (&children).into_iter();
         let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
         let mut current_element = elements.next();
         if let Some(element) = &current_element {
-          if element.kind() == IDENT {
+          if Ident::can_cast(element.kind()) {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -540,7 +598,7 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.next_slot();
         if let Some(element) = &current_element {
-          if element.kind() == IDENT {
+          if Ident::can_cast(element.kind()) {
             slots.mark_present();
             current_element = elements.next();
           }
@@ -1800,12 +1858,38 @@ impl SyntaxFactory for EqlSyntaxFactory {
         }
         slots.into_node(TYPE_CAST_EXPRESSION, children)
       }
+      TYPE_CAST_TARGET => {
+        let mut elements = (&children).into_iter();
+        let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
+        let mut current_element = elements.next();
+        if let Some(element) = &current_element {
+          if AnyLiteralExpression::can_cast(element.kind()) {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if let Some(element) = &current_element {
+          if element.kind() == QUERY_PARAMETER {
+            slots.mark_present();
+            current_element = elements.next();
+          }
+        }
+        slots.next_slot();
+        if current_element.is_some() {
+          return RawSyntaxNode::new(
+            TYPE_CAST_TARGET.to_unknown(),
+            children.into_iter().map(Some),
+          );
+        }
+        slots.into_node(TYPE_CAST_TARGET, children)
+      }
       UNQUALIFIED_NAME => {
         let mut elements = (&children).into_iter();
         let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
         let mut current_element = elements.next();
         if let Some(element) = &current_element {
-          if element.kind() == IDENT {
+          if Ident::can_cast(element.kind()) {
             slots.mark_present();
             current_element = elements.next();
           }

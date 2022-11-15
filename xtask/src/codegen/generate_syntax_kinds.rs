@@ -19,7 +19,7 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
       // These tokens, when parsed to proc_macro2::TokenStream, generates a stream of
       // bytes that can't be recognized by [quote].
       // Hence, they need to be thread differently
-      if "{}[]()`".contains(token) {
+      if "{}[]()$`".contains(token) {
         let c = token.chars().next().unwrap();
         quote! { #c }
       } else if ["$=", "//"].contains(token) {
@@ -40,26 +40,45 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
     .collect::<Vec<_>>();
 
   let full_keywords_values = &grammar.keywords;
+  let full_keywords_bytes = full_keywords_values
+    .iter()
+    .map(|keyword| Literal::byte_string(keyword.as_bytes()));
   let full_keywords = full_keywords_values
     .iter()
     .map(|kw| format_ident!("{}_KW", kw.to_shouty_snake_case()))
     .collect::<Vec<_>>();
+
   let full_reserved_keywords_values = &grammar.reserved_keywords;
+  let full_reserved_keywords_bytes = full_reserved_keywords_values
+    .iter()
+    .map(|keyword| Literal::byte_string(keyword.as_bytes()));
   let full_reserved_keywords = full_reserved_keywords_values
     .iter()
     .map(|kw| format_ident!("RESERVED_{}_KW", kw.to_shouty_snake_case()))
     .collect::<Vec<_>>();
+
   let full_edgeql_keywords_values = &grammar.edgeql_keywords;
+  let full_edgeql_keywords_bytes = full_edgeql_keywords_values
+    .iter()
+    .map(|keyword| Literal::byte_string(keyword.as_bytes()));
   let full_edgeql_keywords = full_edgeql_keywords_values
     .iter()
     .map(|kw| format_ident!("EDGE_{}_KW", kw.to_shouty_snake_case()))
     .collect::<Vec<_>>();
+
   let full_sdl_keywords_values = &grammar.sdl_keywords;
+  let full_sdl_keywords_bytes = full_sdl_keywords_values
+    .iter()
+    .map(|keyword| Literal::byte_string(keyword.as_bytes()));
   let full_sdl_keywords = full_sdl_keywords_values
     .iter()
     .map(|kw| format_ident!("SDL_{}_KW", kw.to_shouty_snake_case()))
     .collect::<Vec<_>>();
+
   let full_ddl_keywords_values = &grammar.ddl_keywords;
+  let full_ddl_keywords_bytes = full_ddl_keywords_values
+    .iter()
+    .map(|keyword| Literal::byte_string(keyword.as_bytes()));
   let full_ddl_keywords = full_ddl_keywords_values
     .iter()
     .map(|kw| format_ident!("DDL_{}_KW", kw.to_shouty_snake_case()))
@@ -157,11 +176,17 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
   let syntax_kind_impl = quote! {
     pub const fn to_string(&self) -> Option<&'static str> {
       let tok = match self {
+        // Punctuation
         #(#punctuation => #punctuation_strings,)*
+        // Shared keywords
         #(#all_keywords => #all_keyword_strings,)*
+        // Reserved keywords
         #(#all_reserved_keywords => #all_reserved_keyword_strings,)*
+        // EdgeQL keywords
         #(#all_edgeql_keywords => #all_edgeql_keyword_strings,)*
+        // SDL keywords
         #(#all_sdl_keywords => #all_sdl_keyword_strings,)*
+        // DDL keywords
         #(#all_ddl_keywords => #all_ddl_keyword_strings,)*
         STRING_LITERAL => "string literal",
         _ => return None,
@@ -189,14 +214,23 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
         TOMBSTONE,
         /// Marks the end of the file. May have trivia attached.
         EOF,
+        // Punctuation
         #(#punctuation,)*
+        // Shared keywords
         #(#all_keywords,)*
+        // Reserved keywords
         #(#all_reserved_keywords,)*
+        // EdgeQL keywords
         #(#all_edgeql_keywords,)*
+        // SDL keywords
         #(#all_sdl_keywords,)*
+        // DDL keywords
         #(#all_ddl_keywords,)*
+        // Literals
         #(#literals,)*
+        // Tokens
         #(#tokens,)*
+        // Nodes
         #(#nodes,)*
 
         // Technical kind so that we can cast from u16 safely
@@ -229,10 +263,15 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
 
         pub fn from_keyword(ident: &str) -> Option<#syntax_kind> {
           let kw = match ident {
+            // Shared keywords
             #(#full_keywords_values => #full_keywords,)*
+            // Reserved keywords
             #(#full_reserved_keywords_values => #full_reserved_keywords,)*
+            // EdgeQL keywords
             #(#full_edgeql_keywords_values => #full_edgeql_keywords,)*
+            // SDL keywords
             #(#full_sdl_keywords_values => #full_sdl_keywords,)*
+            // DDL keywords
             #(#full_ddl_keywords_values => #full_ddl_keywords,)*
             _ => return None,
           };
@@ -242,6 +281,26 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
         #syntax_kind_impl
 
       }
+
+
+      impl From<&'_ [u8]> for EqlSyntaxKind {
+        fn from(slice: &'_ [u8]) -> Self {
+          match slice {
+            // Shared keywords
+            #(#full_keywords_bytes => #full_keywords,)*
+            // Reserved keywords
+            #(#full_reserved_keywords_bytes => #full_reserved_keywords,)*
+            // EdgeQL keywords
+            #(#full_edgeql_keywords_bytes => #full_edgeql_keywords,)*
+            // SDL keywords
+            #(#full_sdl_keywords_bytes => #full_sdl_keywords,)*
+            // DDL keywords
+            #(#full_ddl_keywords_bytes => #full_ddl_keywords,)*
+            _ => IDENT,
+          }
+        }
+      }
+
 
       /// Utility macro for creating a SyntaxKind through simple macro syntax
       #[macro_export]
@@ -257,6 +316,12 @@ pub fn generate_syntax_kinds(grammar: AstKinds) -> Result<String> {
           [#] => { $crate::#syntax_kind::HASH };
       }
   };
+  let ast = ast
+    .to_string()
+    .replace("macro_rules ! T { ", "macro_rules! T {\n  ")
+    .replace(" } ; [", " };\n  [")
+    .replace(" :: ", "::")
+    .replace(" } ; }", " };\n}");
 
-  Ok(ast.to_string())
+  Ok(ast)
 }

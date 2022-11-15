@@ -495,22 +495,22 @@ impl DotReferenceName {
 
   pub fn as_fields(&self) -> DotReferenceNameFields {
     DotReferenceNameFields {
-      name_token: self.name_token(),
+      name: self.name(),
       dot_token: self.dot_token(),
-      path_token: self.path_token(),
+      path: self.path(),
     }
   }
 
-  pub fn name_token(&self) -> SyntaxResult<SyntaxToken> {
-    support::required_token(&self.syntax, 0usize)
+  pub fn name(&self) -> SyntaxResult<Ident> {
+    support::required_node(&self.syntax, 0usize)
   }
 
   pub fn dot_token(&self) -> SyntaxResult<SyntaxToken> {
     support::required_token(&self.syntax, 1usize)
   }
 
-  pub fn path_token(&self) -> SyntaxResult<SyntaxToken> {
-    support::required_token(&self.syntax, 2usize)
+  pub fn path(&self) -> SyntaxResult<Ident> {
+    support::required_node(&self.syntax, 2usize)
   }
 }
 #[cfg(feature = "serde")]
@@ -524,9 +524,9 @@ impl Serialize for DotReferenceName {
 }
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DotReferenceNameFields {
-  pub name_token: SyntaxResult<SyntaxToken>,
+  pub name: SyntaxResult<Ident>,
   pub dot_token: SyntaxResult<SyntaxToken>,
-  pub path_token: SyntaxResult<SyntaxToken>,
+  pub path: SyntaxResult<Ident>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct DurationType {
@@ -795,6 +795,50 @@ pub struct FloatThirtyTwoTypeFields {
   pub float32_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct Ident {
+  pub(crate) syntax: SyntaxNode,
+}
+impl Ident {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self { syntax }
+  }
+
+  pub fn as_fields(&self) -> IdentFields {
+    IdentFields {
+      plain_ident_token: self.plain_ident_token(),
+      quoted_ident_token: self.quoted_ident_token(),
+    }
+  }
+
+  pub fn plain_ident_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 0usize)
+  }
+
+  pub fn quoted_ident_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 1usize)
+  }
+}
+#[cfg(feature = "serde")]
+impl Serialize for Ident {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    self.as_fields().serialize(serializer)
+  }
+}
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct IdentFields {
+  pub plain_ident_token: SyntaxResult<SyntaxToken>,
+  pub quoted_ident_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct IntLiteralExpression {
   pub(crate) syntax: SyntaxNode,
 }
@@ -985,6 +1029,44 @@ pub struct JsonTypeFields {
   pub json_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct OutgoingPathStep {
+  pub(crate) syntax: SyntaxNode,
+}
+impl OutgoingPathStep {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self { syntax }
+  }
+
+  pub fn as_fields(&self) -> OutgoingPathStepFields {
+    OutgoingPathStepFields {
+      dot_token: self.dot_token(),
+    }
+  }
+
+  pub fn dot_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 0usize)
+  }
+}
+#[cfg(feature = "serde")]
+impl Serialize for OutgoingPathStep {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    self.as_fields().serialize(serializer)
+  }
+}
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct OutgoingPathStepFields {
+  pub dot_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct ParameterName {
   pub(crate) syntax: SyntaxNode,
 }
@@ -1029,6 +1111,44 @@ pub struct ParameterNameFields {
   pub parameter_name_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct PathStep {
+  pub(crate) syntax: SyntaxNode,
+}
+impl PathStep {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self { syntax }
+  }
+
+  pub fn as_fields(&self) -> PathStepFields {
+    PathStepFields {
+      outgoing_path_step: self.outgoing_path_step(),
+    }
+  }
+
+  pub fn outgoing_path_step(&self) -> SyntaxResult<OutgoingPathStep> {
+    support::required_node(&self.syntax, 0usize)
+  }
+}
+#[cfg(feature = "serde")]
+impl Serialize for PathStep {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    self.as_fields().serialize(serializer)
+  }
+}
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct PathStepFields {
+  pub outgoing_path_step: SyntaxResult<OutgoingPathStep>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct QualifiedName {
   pub(crate) syntax: SyntaxNode,
 }
@@ -1045,22 +1165,22 @@ impl QualifiedName {
 
   pub fn as_fields(&self) -> QualifiedNameFields {
     QualifiedNameFields {
-      name_token: self.name_token(),
+      name: self.name(),
       namespace_token: self.namespace_token(),
-      path_token: self.path_token(),
+      path: self.path(),
     }
   }
 
-  pub fn name_token(&self) -> SyntaxResult<SyntaxToken> {
-    support::required_token(&self.syntax, 0usize)
+  pub fn name(&self) -> SyntaxResult<Ident> {
+    support::required_node(&self.syntax, 0usize)
   }
 
   pub fn namespace_token(&self) -> SyntaxResult<SyntaxToken> {
     support::required_token(&self.syntax, 1usize)
   }
 
-  pub fn path_token(&self) -> SyntaxResult<SyntaxToken> {
-    support::required_token(&self.syntax, 2usize)
+  pub fn path(&self) -> SyntaxResult<Ident> {
+    support::required_node(&self.syntax, 2usize)
   }
 }
 #[cfg(feature = "serde")]
@@ -1074,9 +1194,9 @@ impl Serialize for QualifiedName {
 }
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct QualifiedNameFields {
-  pub name_token: SyntaxResult<SyntaxToken>,
+  pub name: SyntaxResult<Ident>,
   pub namespace_token: SyntaxResult<SyntaxToken>,
-  pub path_token: SyntaxResult<SyntaxToken>,
+  pub path: SyntaxResult<Ident>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RangeType {
@@ -2943,6 +3063,50 @@ pub struct TypeCastExpressionFields {
   pub target: SyntaxResult<TypeCastTarget>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct TypeCastTarget {
+  pub(crate) syntax: SyntaxNode,
+}
+impl TypeCastTarget {
+  #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+  #[doc = r""]
+  #[doc = r" # Safety"]
+  #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+  #[doc = r" or a match on [SyntaxNode::kind]"]
+  #[inline]
+  pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+    Self { syntax }
+  }
+
+  pub fn as_fields(&self) -> TypeCastTargetFields {
+    TypeCastTargetFields {
+      any_literal_expression: self.any_literal_expression(),
+      query_parameter_token: self.query_parameter_token(),
+    }
+  }
+
+  pub fn any_literal_expression(&self) -> SyntaxResult<AnyLiteralExpression> {
+    support::required_node(&self.syntax, 0usize)
+  }
+
+  pub fn query_parameter_token(&self) -> SyntaxResult<SyntaxToken> {
+    support::required_token(&self.syntax, 1usize)
+  }
+}
+#[cfg(feature = "serde")]
+impl Serialize for TypeCastTarget {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    self.as_fields().serialize(serializer)
+  }
+}
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct TypeCastTargetFields {
+  pub any_literal_expression: SyntaxResult<AnyLiteralExpression>,
+  pub query_parameter_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct UnqualifiedName {
   pub(crate) syntax: SyntaxNode,
 }
@@ -2958,13 +3122,11 @@ impl UnqualifiedName {
   }
 
   pub fn as_fields(&self) -> UnqualifiedNameFields {
-    UnqualifiedNameFields {
-      name_token: self.name_token(),
-    }
+    UnqualifiedNameFields { name: self.name() }
   }
 
-  pub fn name_token(&self) -> SyntaxResult<SyntaxToken> {
-    support::required_token(&self.syntax, 0usize)
+  pub fn name(&self) -> SyntaxResult<Ident> {
+    support::required_node(&self.syntax, 0usize)
   }
 }
 #[cfg(feature = "serde")]
@@ -2978,7 +3140,7 @@ impl Serialize for UnqualifiedName {
 }
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct UnqualifiedNameFields {
-  pub name_token: SyntaxResult<SyntaxToken>,
+  pub name: SyntaxResult<Ident>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct UuidType {
@@ -3617,27 +3779,6 @@ impl StringLiteralExpression {
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
-pub enum TypeCastTarget {
-  AnyLiteralExpression(AnyLiteralExpression),
-  ParameterName(ParameterName),
-}
-impl TypeCastTarget {
-  pub fn as_any_literal_expression(&self) -> Option<&AnyLiteralExpression> {
-    match &self {
-      TypeCastTarget::AnyLiteralExpression(item) => Some(item),
-      _ => None,
-    }
-  }
-
-  pub fn as_parameter_name(&self) -> Option<&ParameterName> {
-    match &self {
-      TypeCastTarget::ParameterName(item) => Some(item),
-      _ => None,
-    }
-  }
-}
-#[derive(Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum TypeExpression {
   ArrayType(ArrayType),
   Name(Name),
@@ -4221,9 +4362,9 @@ impl AstNode for DotReferenceName {
 impl std::fmt::Debug for DotReferenceName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("DotReferenceName")
-      .field("name_token", &support::DebugSyntaxResult(self.name_token()))
+      .field("name", &support::DebugSyntaxResult(self.name()))
       .field("dot_token", &support::DebugSyntaxResult(self.dot_token()))
-      .field("path_token", &support::DebugSyntaxResult(self.path_token()))
+      .field("path", &support::DebugSyntaxResult(self.path()))
       .finish()
   }
 }
@@ -4555,6 +4696,55 @@ impl From<FloatThirtyTwoType> for SyntaxElement {
     n.syntax.into()
   }
 }
+impl AstNode for Ident {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> = SyntaxKindSet::from_raw(RawSyntaxKind(IDENT as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == IDENT
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    if Self::can_cast(syntax.kind()) {
+      Some(Self { syntax })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    &self.syntax
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax
+  }
+}
+impl std::fmt::Debug for Ident {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("Ident")
+      .field(
+        "plain_ident_token",
+        &support::DebugSyntaxResult(self.plain_ident_token()),
+      )
+      .field(
+        "quoted_ident_token",
+        &support::DebugSyntaxResult(self.quoted_ident_token()),
+      )
+      .finish()
+  }
+}
+impl From<Ident> for SyntaxNode {
+  fn from(n: Ident) -> SyntaxNode {
+    n.syntax
+  }
+}
+impl From<Ident> for SyntaxElement {
+  fn from(n: Ident) -> SyntaxElement {
+    n.syntax.into()
+  }
+}
 impl AstNode for IntLiteralExpression {
   type Language = Language;
 
@@ -4782,6 +4972,49 @@ impl From<JsonType> for SyntaxElement {
     n.syntax.into()
   }
 }
+impl AstNode for OutgoingPathStep {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> =
+    SyntaxKindSet::from_raw(RawSyntaxKind(OUTGOING_PATH_STEP as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == OUTGOING_PATH_STEP
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    if Self::can_cast(syntax.kind()) {
+      Some(Self { syntax })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    &self.syntax
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax
+  }
+}
+impl std::fmt::Debug for OutgoingPathStep {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("OutgoingPathStep")
+      .field("dot_token", &support::DebugSyntaxResult(self.dot_token()))
+      .finish()
+  }
+}
+impl From<OutgoingPathStep> for SyntaxNode {
+  fn from(n: OutgoingPathStep) -> SyntaxNode {
+    n.syntax
+  }
+}
+impl From<OutgoingPathStep> for SyntaxElement {
+  fn from(n: OutgoingPathStep) -> SyntaxElement {
+    n.syntax.into()
+  }
+}
 impl AstNode for ParameterName {
   type Language = Language;
 
@@ -4832,6 +5065,52 @@ impl From<ParameterName> for SyntaxElement {
     n.syntax.into()
   }
 }
+impl AstNode for PathStep {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> =
+    SyntaxKindSet::from_raw(RawSyntaxKind(PATH_STEP as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == PATH_STEP
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    if Self::can_cast(syntax.kind()) {
+      Some(Self { syntax })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    &self.syntax
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax
+  }
+}
+impl std::fmt::Debug for PathStep {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("PathStep")
+      .field(
+        "outgoing_path_step",
+        &support::DebugSyntaxResult(self.outgoing_path_step()),
+      )
+      .finish()
+  }
+}
+impl From<PathStep> for SyntaxNode {
+  fn from(n: PathStep) -> SyntaxNode {
+    n.syntax
+  }
+}
+impl From<PathStep> for SyntaxElement {
+  fn from(n: PathStep) -> SyntaxElement {
+    n.syntax.into()
+  }
+}
 impl AstNode for QualifiedName {
   type Language = Language;
 
@@ -4861,12 +5140,12 @@ impl AstNode for QualifiedName {
 impl std::fmt::Debug for QualifiedName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("QualifiedName")
-      .field("name_token", &support::DebugSyntaxResult(self.name_token()))
+      .field("name", &support::DebugSyntaxResult(self.name()))
       .field(
         "namespace_token",
         &support::DebugSyntaxResult(self.namespace_token()),
       )
-      .field("path_token", &support::DebugSyntaxResult(self.path_token()))
+      .field("path", &support::DebugSyntaxResult(self.path()))
       .finish()
   }
 }
@@ -6664,6 +6943,56 @@ impl From<TypeCastExpression> for SyntaxElement {
     n.syntax.into()
   }
 }
+impl AstNode for TypeCastTarget {
+  type Language = Language;
+
+  const KIND_SET: SyntaxKindSet<Language> =
+    SyntaxKindSet::from_raw(RawSyntaxKind(TYPE_CAST_TARGET as u16));
+
+  fn can_cast(kind: SyntaxKind) -> bool {
+    kind == TYPE_CAST_TARGET
+  }
+
+  fn cast(syntax: SyntaxNode) -> Option<Self> {
+    if Self::can_cast(syntax.kind()) {
+      Some(Self { syntax })
+    } else {
+      None
+    }
+  }
+
+  fn syntax(&self) -> &SyntaxNode {
+    &self.syntax
+  }
+
+  fn into_syntax(self) -> SyntaxNode {
+    self.syntax
+  }
+}
+impl std::fmt::Debug for TypeCastTarget {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("TypeCastTarget")
+      .field(
+        "any_literal_expression",
+        &support::DebugSyntaxResult(self.any_literal_expression()),
+      )
+      .field(
+        "query_parameter_token",
+        &support::DebugSyntaxResult(self.query_parameter_token()),
+      )
+      .finish()
+  }
+}
+impl From<TypeCastTarget> for SyntaxNode {
+  fn from(n: TypeCastTarget) -> SyntaxNode {
+    n.syntax
+  }
+}
+impl From<TypeCastTarget> for SyntaxElement {
+  fn from(n: TypeCastTarget) -> SyntaxElement {
+    n.syntax.into()
+  }
+}
 impl AstNode for UnqualifiedName {
   type Language = Language;
 
@@ -6693,7 +7022,7 @@ impl AstNode for UnqualifiedName {
 impl std::fmt::Debug for UnqualifiedName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("UnqualifiedName")
-      .field("name_token", &support::DebugSyntaxResult(self.name_token()))
+      .field("name", &support::DebugSyntaxResult(self.name()))
       .finish()
   }
 }
@@ -8270,74 +8599,6 @@ impl From<StringLiteralExpression> for SyntaxElement {
     node.into()
   }
 }
-impl From<ParameterName> for TypeCastTarget {
-  fn from(node: ParameterName) -> TypeCastTarget {
-    TypeCastTarget::ParameterName(node)
-  }
-}
-impl AstNode for TypeCastTarget {
-  type Language = Language;
-
-  const KIND_SET: SyntaxKindSet<Language> =
-    AnyLiteralExpression::KIND_SET.union(ParameterName::KIND_SET);
-
-  fn can_cast(kind: SyntaxKind) -> bool {
-    match kind {
-      PARAMETER_NAME => true,
-      k if AnyLiteralExpression::can_cast(k) => true,
-      _ => false,
-    }
-  }
-
-  fn cast(syntax: SyntaxNode) -> Option<Self> {
-    let res = match syntax.kind() {
-      PARAMETER_NAME => TypeCastTarget::ParameterName(ParameterName { syntax }),
-      _ => {
-        if let Some(any_literal_expression) = AnyLiteralExpression::cast(syntax) {
-          return Some(TypeCastTarget::AnyLiteralExpression(any_literal_expression));
-        }
-        return None;
-      }
-    };
-    Some(res)
-  }
-
-  fn syntax(&self) -> &SyntaxNode {
-    match self {
-      TypeCastTarget::ParameterName(it) => &it.syntax,
-      TypeCastTarget::AnyLiteralExpression(it) => it.syntax(),
-    }
-  }
-
-  fn into_syntax(self) -> SyntaxNode {
-    match self {
-      TypeCastTarget::ParameterName(it) => it.syntax,
-      TypeCastTarget::AnyLiteralExpression(it) => it.into_syntax(),
-    }
-  }
-}
-impl std::fmt::Debug for TypeCastTarget {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    match self {
-      TypeCastTarget::AnyLiteralExpression(it) => std::fmt::Debug::fmt(it, f),
-      TypeCastTarget::ParameterName(it) => std::fmt::Debug::fmt(it, f),
-    }
-  }
-}
-impl From<TypeCastTarget> for SyntaxNode {
-  fn from(n: TypeCastTarget) -> SyntaxNode {
-    match n {
-      TypeCastTarget::AnyLiteralExpression(it) => it.into(),
-      TypeCastTarget::ParameterName(it) => it.into(),
-    }
-  }
-}
-impl From<TypeCastTarget> for SyntaxElement {
-  fn from(n: TypeCastTarget) -> SyntaxElement {
-    let node: SyntaxNode = n.into();
-    node.into()
-  }
-}
 impl From<ArrayType> for TypeExpression {
   fn from(node: ArrayType) -> TypeExpression {
     TypeExpression::ArrayType(node)
@@ -8522,11 +8783,6 @@ impl std::fmt::Display for StringLiteralExpression {
     std::fmt::Display::fmt(self.syntax(), f)
   }
 }
-impl std::fmt::Display for TypeCastTarget {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    std::fmt::Display::fmt(self.syntax(), f)
-  }
-}
 impl std::fmt::Display for TypeExpression {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
@@ -8627,6 +8883,11 @@ impl std::fmt::Display for FloatThirtyTwoType {
     std::fmt::Display::fmt(self.syntax(), f)
   }
 }
+impl std::fmt::Display for Ident {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
 impl std::fmt::Display for IntLiteralExpression {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
@@ -8652,7 +8913,17 @@ impl std::fmt::Display for JsonType {
     std::fmt::Display::fmt(self.syntax(), f)
   }
 }
+impl std::fmt::Display for OutgoingPathStep {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
 impl std::fmt::Display for ParameterName {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
+impl std::fmt::Display for PathStep {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
   }
@@ -8833,6 +9104,11 @@ impl std::fmt::Display for TupleType {
   }
 }
 impl std::fmt::Display for TypeCastExpression {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    std::fmt::Display::fmt(self.syntax(), f)
+  }
+}
+impl std::fmt::Display for TypeCastTarget {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     std::fmt::Display::fmt(self.syntax(), f)
   }

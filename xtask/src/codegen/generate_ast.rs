@@ -47,7 +47,7 @@ pub fn generate_ast() -> Result<Vec<String>> {
 }
 
 pub(crate) fn load_grammar() -> Result<Grammar> {
-  let grammar_src = include_str!("./edgedb.ungram");
+  let grammar_src = include_str!("../../edgedb.ungram");
   Ok(grammar_src.parse()?)
 }
 
@@ -223,7 +223,7 @@ fn clean_token_name(grammar: &Grammar, token: &Token) -> String {
   // These tokens, when parsed to proc_macro2::TokenStream, generates a stream of
   // bytes that can't be recognized by [quote].
   // Hence, they need to be decorated with single quotes.
-  if "[]{}()`".contains(&name) {
+  if "[]{}()`$".contains(&name) {
     name = format!("'{}'", name);
   }
   name

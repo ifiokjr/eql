@@ -28,12 +28,16 @@ fn main() {
   let dir =
     env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| env!("CARGO_MANIFEST_DIR").to_owned());
   let path = Path::new(&dir).join("src/codegen/nodes.rs");
-  let contents = ident.to_string();
+  let contents = ident
+    .to_string()
+    .replace(" : & '_ [& '_ str] = & [", ": &'_ [&'_ str] = &[\n  ")
+    .replace(" , ", ",\n  ")
+    .replace("\"] ;", "\"\n];");
   update(&path, contents.as_str());
 }
 
 fn load_grammar() -> Grammar {
-  let grammar_src = include_str!("./src/codegen/edgedb.ungram");
+  let grammar_src = include_str!("./edgedb.ungram");
   grammar_src.parse().unwrap()
 }
 

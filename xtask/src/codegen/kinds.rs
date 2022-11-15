@@ -60,6 +60,7 @@ const PUNCTUATION: &'_ [(&'_ str, &'_ str)] = &[
   ("@", "AT"),
   ("`", "BACKTICK"),
   ("$", "DOLLAR"),
+  ("#", "HASH"),
 ];
 
 const LITERALS: &'_ [&'_ str] = &[
@@ -71,7 +72,15 @@ const LITERALS: &'_ [&'_ str] = &[
   "BYTE_LITERAL",
 ];
 
-const TOKENS: &'_ [&'_ str] = &["ERROR", "IDENT", "NEWLINE", "WHITESPACE", "COMMENT"];
+const TOKENS: &'_ [&'_ str] = &[
+  "ERROR",
+  "PLAIN_IDENT",
+  "QUOTED_IDENT",
+  "NEWLINE",
+  "WHITESPACE",
+  "COMMENT",
+  "QUERY_PARAMETER", // `$argument` in query
+];
 const SHARED_KEYWORDS: &'_ [&'_ str] = &[
   // "__source__",
   // "__subject__",
@@ -161,10 +170,7 @@ const SDL_KEYWORDS: &'_ [&'_ str] = &["annotation", "link", "multi", "type", "us
 const DDL_KEYWORDS: &'_ [&'_ str] = &[
   "after", "alter", "before", "create", "drop", "first", "last",
 ];
-// );
-
 const RESERVED_KEYWORDS: &'_ [&'_ str] = &[
-  // Other (requires more understanding of the grammar)
   "abort",
   "applied",
   "assignment",
@@ -407,9 +413,12 @@ impl Field {
           "&" => "ampersand",
           "|" => "pipe",
           "@" => "at",
-          "$" => "dollar",
+          "#" => "hash",
+          "'`'" => "backtick",
+          "'$'" => "dollar",
           _ => name,
         };
+
         format_ident!("{}_token", name)
       }
       Field::Node { name, .. } => {

@@ -125,5 +125,10 @@ pub fn generate_syntax_factory(ast: &AstSrc) -> Result<String> {
       }
   };
 
-  Ok(output.to_string())
+  let output = output
+    .to_string()
+    .replace("T ! [ ", "T![")
+    .replace(" ] )", "])");
+
+  Ok(output)
 }

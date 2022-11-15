@@ -48,6 +48,7 @@ pub enum EqlSyntaxKind {
   AT,
   BACKTICK,
   DOLLAR,
+  HASH,
   ABSTRACT_KW,
   ACCESS_KW,
   ALIAS_KW,
@@ -258,10 +259,12 @@ pub enum EqlSyntaxKind {
   STRING_LITERAL,
   BYTE_LITERAL,
   ERROR,
-  IDENT,
+  PLAIN_IDENT,
+  QUOTED_IDENT,
   NEWLINE,
   WHITESPACE,
   COMMENT,
+  QUERY_PARAMETER,
   ANY_LITERAL_EXPRESSION,
   ANY_ROOT,
   ANY_UNKNOWN,
@@ -287,13 +290,16 @@ pub enum EqlSyntaxKind {
   FLOAT_LITERAL_EXPRESSION,
   FLOAT_SIXTY_FOUR_TYPE,
   FLOAT_THIRTY_TWO_TYPE,
+  IDENT,
   INT_LITERAL_EXPRESSION,
   INT_SIXTEEN_TYPE,
   INT_SIXTY_FOUR_TYPE,
   INT_THIRTY_TWO_TYPE,
   JSON_TYPE,
   NAME,
+  OUTGOING_PATH_STEP,
   PARAMETER_NAME,
+  PATH_STEP,
   PRIMITIVE_TYPE,
   QUALIFIED_NAME,
   RANGE_TYPE,
@@ -374,7 +380,8 @@ impl EqlSyntaxKind {
       | FLOOR_DIV | CONCAT | GREATER_EQUAL | LESS_EQUAL | NOT_EQUAL | NOT_DISTINCT_FROM
       | DISTINCT_FROM | COMMA | OPEN_PAREN | CLOSE_PAREN | OPEN_SQUARE | CLOSE_SQUARE
       | OPEN_CURLY | CLOSE_CURLY | DOT | SEMICOLON | COLON | ADD | SUBTRACT | MULTIPLY | DIVIDE
-      | MODULO | POW | LESS | GREATER | EQUAL | AMPERSAND | PIPE | AT | BACKTICK | DOLLAR => true,
+      | MODULO | POW | LESS | GREATER | EQUAL | AMPERSAND | PIPE | AT | BACKTICK | DOLLAR
+      | HASH => true,
       _ => false,
     }
   }
@@ -653,6 +660,7 @@ impl EqlSyntaxKind {
       AT => "@",
       BACKTICK => "`",
       DOLLAR => "$",
+      HASH => "#",
       ABSTRACT_KW => "abstract",
       ACCESS_KW => "access",
       ALIAS_KW => "alias",
@@ -862,6 +870,462 @@ impl EqlSyntaxKind {
     Some(tok)
   }
 }
+impl From<&'_ [u8]> for EqlSyntaxKind {
+  fn from(slice: &'_ [u8]) -> Self {
+    match slice {
+      b"abstract" => ABSTRACT_KW,
+      b"access" => ACCESS_KW,
+      b"alias" => ALIAS_KW,
+      b"all" => ALL_KW,
+      b"allow" => ALLOW_KW,
+      b"and" => AND_KW,
+      b"anytuple" => ANYTUPLE_KW,
+      b"anytype" => ANYTYPE_KW,
+      b"array" => ARRAY_KW,
+      b"as" => AS_KW,
+      b"b" => B_KW,
+      b"bigint" => BIGINT_KW,
+      b"bool" => BOOL_KW,
+      b"by" => BY_KW,
+      b"bytes" => BYTES_KW,
+      b"commit" => COMMIT_KW,
+      b"configure" => CONFIGURE_KW,
+      b"datetime" => DATETIME_KW,
+      b"ddl" => DDL_KW,
+      b"decimal" => DECIMAL_KW,
+      b"delete" => DELETE_KW,
+      b"describe" => DESCRIBE_KW,
+      b"detached" => DETACHED_KW,
+      b"distinct" => DISTINCT_KW,
+      b"duration" => DURATION_KW,
+      b"else" => ELSE_KW,
+      b"enum" => ENUM_KW,
+      b"errmessage" => ERRMESSAGE_KW,
+      b"exists" => EXISTS_KW,
+      b"extending" => EXTENDING_KW,
+      b"false" => FALSE_KW,
+      b"filter" => FILTER_KW,
+      b"float32" => FLOAT32_KW,
+      b"float64" => FLOAT64_KW,
+      b"for" => FOR_KW,
+      b"global" => GLOBAL_KW,
+      b"group" => GROUP_KW,
+      b"if" => IF_KW,
+      b"ilike" => ILIKE_KW,
+      b"in" => IN_KW,
+      b"index" => INDEX_KW,
+      b"insert" => INSERT_KW,
+      b"int16" => INT16_KW,
+      b"int32" => INT32_KW,
+      b"int64" => INT64_KW,
+      b"introspect" => INTROSPECT_KW,
+      b"is" => IS_KW,
+      b"json" => JSON_KW,
+      b"like" => LIKE_KW,
+      b"limit" => LIMIT_KW,
+      b"module" => MODULE_KW,
+      b"not" => NOT_KW,
+      b"offset" => OFFSET_KW,
+      b"on" => ON_KW,
+      b"optional" => OPTIONAL_KW,
+      b"or" => OR_KW,
+      b"policy" => POLICY_KW,
+      b"r" => R_KW,
+      b"range" => RANGE_KW,
+      b"sdl" => SDL_KW,
+      b"select" => SELECT_KW,
+      b"sequence" => SEQUENCE_KW,
+      b"set" => SET_KW,
+      b"single" => SINGLE_KW,
+      b"start" => START_KW,
+      b"std" => STD_KW,
+      b"str" => STR_KW,
+      b"to" => TO_KW,
+      b"true" => TRUE_KW,
+      b"tuple" => TUPLE_KW,
+      b"typeof" => TYPEOF_KW,
+      b"update" => UPDATE_KW,
+      b"uuid" => UUID_KW,
+      b"variadic" => VARIADIC_KW,
+      b"with" => WITH_KW,
+      b"abort" => RESERVED_ABORT_KW,
+      b"applied" => RESERVED_APPLIED_KW,
+      b"assignment" => RESERVED_ASSIGNMENT_KW,
+      b"cardinality" => RESERVED_CARDINALITY_KW,
+      b"cast" => RESERVED_CAST_KW,
+      b"committed" => RESERVED_COMMITTED_KW,
+      b"config" => RESERVED_CONFIG_KW,
+      b"conflict" => RESERVED_CONFLICT_KW,
+      b"constraint" => RESERVED_CONSTRAINT_KW,
+      b"cube" => RESERVED_CUBE_KW,
+      b"current" => RESERVED_CURRENT_KW,
+      b"database" => RESERVED_DATABASE_KW,
+      b"declare" => RESERVED_DECLARE_KW,
+      b"default" => RESERVED_DEFAULT_KW,
+      b"deferrable" => RESERVED_DEFERRABLE_KW,
+      b"deferred" => RESERVED_DEFERRED_KW,
+      b"delegated" => RESERVED_DELEGATED_KW,
+      b"deny" => RESERVED_DENY_KW,
+      b"empty" => RESERVED_EMPTY_KW,
+      b"except" => RESERVED_EXCEPT_KW,
+      b"expression" => RESERVED_EXPRESSION_KW,
+      b"extension" => RESERVED_EXTENSION_KW,
+      b"final" => RESERVED_FINAL_KW,
+      b"from" => RESERVED_FROM_KW,
+      b"function" => RESERVED_FUNCTION_KW,
+      b"future" => RESERVED_FUTURE_KW,
+      b"implicit" => RESERVED_IMPLICIT_KW,
+      b"infix" => RESERVED_INFIX_KW,
+      b"inheritable" => RESERVED_INHERITABLE_KW,
+      b"instance" => RESERVED_INSTANCE_KW,
+      b"into" => RESERVED_INTO_KW,
+      b"isolation" => RESERVED_ISOLATION_KW,
+      b"migration" => RESERVED_MIGRATION_KW,
+      b"named" => RESERVED_NAMED_KW,
+      b"object" => RESERVED_OBJECT_KW,
+      b"of" => RESERVED_OF_KW,
+      b"only" => RESERVED_ONLY_KW,
+      b"onto" => RESERVED_ONTO_KW,
+      b"operator" => RESERVED_OPERATOR_KW,
+      b"optionality" => RESERVED_OPTIONALITY_KW,
+      b"order" => RESERVED_ORDER_KW,
+      b"orphan" => RESERVED_ORPHAN_KW,
+      b"overloaded" => RESERVED_OVERLOADED_KW,
+      b"owned" => RESERVED_OWNED_KW,
+      b"package" => RESERVED_PACKAGE_KW,
+      b"populate" => RESERVED_POPULATE_KW,
+      b"postfix" => RESERVED_POSTFIX_KW,
+      b"prefix" => RESERVED_PREFIX_KW,
+      b"property" => RESERVED_PROPERTY_KW,
+      b"proposed" => RESERVED_PROPOSED_KW,
+      b"pseudo" => RESERVED_PSEUDO_KW,
+      b"read" => RESERVED_READ_KW,
+      b"reject" => RESERVED_REJECT_KW,
+      b"release" => RESERVED_RELEASE_KW,
+      b"rename" => RESERVED_RENAME_KW,
+      b"required" => RESERVED_REQUIRED_KW,
+      b"reset" => RESERVED_RESET_KW,
+      b"restrict" => RESERVED_RESTRICT_KW,
+      b"rewrite" => RESERVED_REWRITE_KW,
+      b"role" => RESERVED_ROLE_KW,
+      b"roles" => RESERVED_ROLES_KW,
+      b"rollup" => RESERVED_ROLLUP_KW,
+      b"scalar" => RESERVED_SCALAR_KW,
+      b"schema" => RESERVED_SCHEMA_KW,
+      b"serializable" => RESERVED_SERIALIZABLE_KW,
+      b"session" => RESERVED_SESSION_KW,
+      b"source" => RESERVED_SOURCE_KW,
+      b"superuser" => RESERVED_SUPERUSER_KW,
+      b"system" => RESERVED_SYSTEM_KW,
+      b"target" => RESERVED_TARGET_KW,
+      b"ternary" => RESERVED_TERNARY_KW,
+      b"text" => RESERVED_TEXT_KW,
+      b"then" => RESERVED_THEN_KW,
+      b"transaction" => RESERVED_TRANSACTION_KW,
+      b"unless" => RESERVED_UNLESS_KW,
+      b"verbose" => RESERVED_VERBOSE_KW,
+      b"version" => RESERVED_VERSION_KW,
+      b"view" => RESERVED_VIEW_KW,
+      b"write" => RESERVED_WRITE_KW,
+      b"analyze" => RESERVED_ANALYZE_KW,
+      b"anyarray" => RESERVED_ANYARRAY_KW,
+      b"begin" => RESERVED_BEGIN_KW,
+      b"case" => RESERVED_CASE_KW,
+      b"check" => RESERVED_CHECK_KW,
+      b"deallocate" => RESERVED_DEALLOCATE_KW,
+      b"discard" => RESERVED_DISCARD_KW,
+      b"do" => RESERVED_DO_KW,
+      b"end" => RESERVED_END_KW,
+      b"execute" => RESERVED_EXECUTE_KW,
+      b"explain" => RESERVED_EXPLAIN_KW,
+      b"fetch" => RESERVED_FETCH_KW,
+      b"get" => RESERVED_GET_KW,
+      b"grant" => RESERVED_GRANT_KW,
+      b"import" => RESERVED_IMPORT_KW,
+      b"listen" => RESERVED_LISTEN_KW,
+      b"load" => RESERVED_LOAD_KW,
+      b"lock" => RESERVED_LOCK_KW,
+      b"match" => RESERVED_MATCH_KW,
+      b"move" => RESERVED_MOVE_KW,
+      b"notify" => RESERVED_NOTIFY_KW,
+      b"over" => RESERVED_OVER_KW,
+      b"prepare" => RESERVED_PREPARE_KW,
+      b"partition" => RESERVED_PARTITION_KW,
+      b"raise" => RESERVED_RAISE_KW,
+      b"refresh" => RESERVED_REFRESH_KW,
+      b"reindex" => RESERVED_REINDEX_KW,
+      b"revoke" => RESERVED_REVOKE_KW,
+      b"when" => RESERVED_WHEN_KW,
+      b"window" => RESERVED_WINDOW_KW,
+      b"never" => RESERVED_NEVER_KW,
+      b"asc" => EDGE_ASC_KW,
+      b"desc" => EDGE_DESC_KW,
+      b"union" => EDGE_UNION_KW,
+      b"savepoint" => EDGE_SAVEPOINT_KW,
+      b"rollback" => EDGE_ROLLBACK_KW,
+      b"annotation" => SDL_ANNOTATION_KW,
+      b"link" => SDL_LINK_KW,
+      b"multi" => SDL_MULTI_KW,
+      b"type" => SDL_TYPE_KW,
+      b"using" => SDL_USING_KW,
+      b"volatility" => SDL_VOLATILITY_KW,
+      b"after" => DDL_AFTER_KW,
+      b"alter" => DDL_ALTER_KW,
+      b"before" => DDL_BEFORE_KW,
+      b"create" => DDL_CREATE_KW,
+      b"drop" => DDL_DROP_KW,
+      b"first" => DDL_FIRST_KW,
+      b"last" => DDL_LAST_KW,
+      _ => IDENT,
+    }
+  }
+}
 #[doc = r" Utility macro for creating a SyntaxKind through simple macro syntax"]
 #[macro_export]
-macro_rules ! T { [:=] => { $ crate :: EqlSyntaxKind :: ASSIGN } ; [+=] => { $ crate :: EqlSyntaxKind :: ADD_ASSIGN } ; [-=] => { $ crate :: EqlSyntaxKind :: SUB_ASSIGN } ; [->] => { $ crate :: EqlSyntaxKind :: ARROW } ; [??] => { $ crate :: EqlSyntaxKind :: COALESCE } ; [::] => { $ crate :: EqlSyntaxKind :: NAMESPACE } ; [.<] => { $ crate :: EqlSyntaxKind :: BACKWARD_LINK } ; ["//"] => { $ crate :: EqlSyntaxKind :: FLOOR_DIV } ; [++] => { $ crate :: EqlSyntaxKind :: CONCAT } ; [>=] => { $ crate :: EqlSyntaxKind :: GREATER_EQUAL } ; [<=] => { $ crate :: EqlSyntaxKind :: LESS_EQUAL } ; [!=] => { $ crate :: EqlSyntaxKind :: NOT_EQUAL } ; [?=] => { $ crate :: EqlSyntaxKind :: NOT_DISTINCT_FROM } ; [?!=] => { $ crate :: EqlSyntaxKind :: DISTINCT_FROM } ; [,] => { $ crate :: EqlSyntaxKind :: COMMA } ; ['('] => { $ crate :: EqlSyntaxKind :: OPEN_PAREN } ; [')'] => { $ crate :: EqlSyntaxKind :: CLOSE_PAREN } ; ['['] => { $ crate :: EqlSyntaxKind :: OPEN_SQUARE } ; [']'] => { $ crate :: EqlSyntaxKind :: CLOSE_SQUARE } ; ['{'] => { $ crate :: EqlSyntaxKind :: OPEN_CURLY } ; ['}'] => { $ crate :: EqlSyntaxKind :: CLOSE_CURLY } ; [.] => { $ crate :: EqlSyntaxKind :: DOT } ; [;] => { $ crate :: EqlSyntaxKind :: SEMICOLON } ; [:] => { $ crate :: EqlSyntaxKind :: COLON } ; [+] => { $ crate :: EqlSyntaxKind :: ADD } ; [-] => { $ crate :: EqlSyntaxKind :: SUBTRACT } ; [*] => { $ crate :: EqlSyntaxKind :: MULTIPLY } ; [/] => { $ crate :: EqlSyntaxKind :: DIVIDE } ; [%] => { $ crate :: EqlSyntaxKind :: MODULO } ; [^] => { $ crate :: EqlSyntaxKind :: POW } ; [<] => { $ crate :: EqlSyntaxKind :: LESS } ; [>] => { $ crate :: EqlSyntaxKind :: GREATER } ; [=] => { $ crate :: EqlSyntaxKind :: EQUAL } ; [&] => { $ crate :: EqlSyntaxKind :: AMPERSAND } ; [|] => { $ crate :: EqlSyntaxKind :: PIPE } ; [@] => { $ crate :: EqlSyntaxKind :: AT } ; ['`'] => { $ crate :: EqlSyntaxKind :: BACKTICK } ; [$] => { $ crate :: EqlSyntaxKind :: DOLLAR } ; [abstract] => { $ crate :: EqlSyntaxKind :: ABSTRACT_KW } ; [access] => { $ crate :: EqlSyntaxKind :: ACCESS_KW } ; [alias] => { $ crate :: EqlSyntaxKind :: ALIAS_KW } ; [all] => { $ crate :: EqlSyntaxKind :: ALL_KW } ; [allow] => { $ crate :: EqlSyntaxKind :: ALLOW_KW } ; [and] => { $ crate :: EqlSyntaxKind :: AND_KW } ; [anytuple] => { $ crate :: EqlSyntaxKind :: ANYTUPLE_KW } ; [anytype] => { $ crate :: EqlSyntaxKind :: ANYTYPE_KW } ; [array] => { $ crate :: EqlSyntaxKind :: ARRAY_KW } ; [as] => { $ crate :: EqlSyntaxKind :: AS_KW } ; [b] => { $ crate :: EqlSyntaxKind :: B_KW } ; [bigint] => { $ crate :: EqlSyntaxKind :: BIGINT_KW } ; [bool] => { $ crate :: EqlSyntaxKind :: BOOL_KW } ; [by] => { $ crate :: EqlSyntaxKind :: BY_KW } ; [bytes] => { $ crate :: EqlSyntaxKind :: BYTES_KW } ; [commit] => { $ crate :: EqlSyntaxKind :: COMMIT_KW } ; [configure] => { $ crate :: EqlSyntaxKind :: CONFIGURE_KW } ; [datetime] => { $ crate :: EqlSyntaxKind :: DATETIME_KW } ; [ddl] => { $ crate :: EqlSyntaxKind :: DDL_KW } ; [decimal] => { $ crate :: EqlSyntaxKind :: DECIMAL_KW } ; [delete] => { $ crate :: EqlSyntaxKind :: DELETE_KW } ; [describe] => { $ crate :: EqlSyntaxKind :: DESCRIBE_KW } ; [detached] => { $ crate :: EqlSyntaxKind :: DETACHED_KW } ; [distinct] => { $ crate :: EqlSyntaxKind :: DISTINCT_KW } ; [duration] => { $ crate :: EqlSyntaxKind :: DURATION_KW } ; [else] => { $ crate :: EqlSyntaxKind :: ELSE_KW } ; [enum] => { $ crate :: EqlSyntaxKind :: ENUM_KW } ; [errmessage] => { $ crate :: EqlSyntaxKind :: ERRMESSAGE_KW } ; [exists] => { $ crate :: EqlSyntaxKind :: EXISTS_KW } ; [extending] => { $ crate :: EqlSyntaxKind :: EXTENDING_KW } ; [false] => { $ crate :: EqlSyntaxKind :: FALSE_KW } ; [filter] => { $ crate :: EqlSyntaxKind :: FILTER_KW } ; [float32] => { $ crate :: EqlSyntaxKind :: FLOAT32_KW } ; [float64] => { $ crate :: EqlSyntaxKind :: FLOAT64_KW } ; [for] => { $ crate :: EqlSyntaxKind :: FOR_KW } ; [global] => { $ crate :: EqlSyntaxKind :: GLOBAL_KW } ; [group] => { $ crate :: EqlSyntaxKind :: GROUP_KW } ; [if] => { $ crate :: EqlSyntaxKind :: IF_KW } ; [ilike] => { $ crate :: EqlSyntaxKind :: ILIKE_KW } ; [in] => { $ crate :: EqlSyntaxKind :: IN_KW } ; [index] => { $ crate :: EqlSyntaxKind :: INDEX_KW } ; [insert] => { $ crate :: EqlSyntaxKind :: INSERT_KW } ; [int16] => { $ crate :: EqlSyntaxKind :: INT16_KW } ; [int32] => { $ crate :: EqlSyntaxKind :: INT32_KW } ; [int64] => { $ crate :: EqlSyntaxKind :: INT64_KW } ; [introspect] => { $ crate :: EqlSyntaxKind :: INTROSPECT_KW } ; [is] => { $ crate :: EqlSyntaxKind :: IS_KW } ; [json] => { $ crate :: EqlSyntaxKind :: JSON_KW } ; [like] => { $ crate :: EqlSyntaxKind :: LIKE_KW } ; [limit] => { $ crate :: EqlSyntaxKind :: LIMIT_KW } ; [module] => { $ crate :: EqlSyntaxKind :: MODULE_KW } ; [not] => { $ crate :: EqlSyntaxKind :: NOT_KW } ; [offset] => { $ crate :: EqlSyntaxKind :: OFFSET_KW } ; [on] => { $ crate :: EqlSyntaxKind :: ON_KW } ; [optional] => { $ crate :: EqlSyntaxKind :: OPTIONAL_KW } ; [or] => { $ crate :: EqlSyntaxKind :: OR_KW } ; [policy] => { $ crate :: EqlSyntaxKind :: POLICY_KW } ; [r] => { $ crate :: EqlSyntaxKind :: R_KW } ; [range] => { $ crate :: EqlSyntaxKind :: RANGE_KW } ; [sdl] => { $ crate :: EqlSyntaxKind :: SDL_KW } ; [select] => { $ crate :: EqlSyntaxKind :: SELECT_KW } ; [sequence] => { $ crate :: EqlSyntaxKind :: SEQUENCE_KW } ; [set] => { $ crate :: EqlSyntaxKind :: SET_KW } ; [single] => { $ crate :: EqlSyntaxKind :: SINGLE_KW } ; [start] => { $ crate :: EqlSyntaxKind :: START_KW } ; [std] => { $ crate :: EqlSyntaxKind :: STD_KW } ; [str] => { $ crate :: EqlSyntaxKind :: STR_KW } ; [to] => { $ crate :: EqlSyntaxKind :: TO_KW } ; [true] => { $ crate :: EqlSyntaxKind :: TRUE_KW } ; [tuple] => { $ crate :: EqlSyntaxKind :: TUPLE_KW } ; [typeof] => { $ crate :: EqlSyntaxKind :: TYPEOF_KW } ; [update] => { $ crate :: EqlSyntaxKind :: UPDATE_KW } ; [uuid] => { $ crate :: EqlSyntaxKind :: UUID_KW } ; [variadic] => { $ crate :: EqlSyntaxKind :: VARIADIC_KW } ; [with] => { $ crate :: EqlSyntaxKind :: WITH_KW } ; [abort] => { $ crate :: EqlSyntaxKind :: RESERVED_ABORT_KW } ; [applied] => { $ crate :: EqlSyntaxKind :: RESERVED_APPLIED_KW } ; [assignment] => { $ crate :: EqlSyntaxKind :: RESERVED_ASSIGNMENT_KW } ; [cardinality] => { $ crate :: EqlSyntaxKind :: RESERVED_CARDINALITY_KW } ; [cast] => { $ crate :: EqlSyntaxKind :: RESERVED_CAST_KW } ; [committed] => { $ crate :: EqlSyntaxKind :: RESERVED_COMMITTED_KW } ; [config] => { $ crate :: EqlSyntaxKind :: RESERVED_CONFIG_KW } ; [conflict] => { $ crate :: EqlSyntaxKind :: RESERVED_CONFLICT_KW } ; [constraint] => { $ crate :: EqlSyntaxKind :: RESERVED_CONSTRAINT_KW } ; [cube] => { $ crate :: EqlSyntaxKind :: RESERVED_CUBE_KW } ; [current] => { $ crate :: EqlSyntaxKind :: RESERVED_CURRENT_KW } ; [database] => { $ crate :: EqlSyntaxKind :: RESERVED_DATABASE_KW } ; [declare] => { $ crate :: EqlSyntaxKind :: RESERVED_DECLARE_KW } ; [default] => { $ crate :: EqlSyntaxKind :: RESERVED_DEFAULT_KW } ; [deferrable] => { $ crate :: EqlSyntaxKind :: RESERVED_DEFERRABLE_KW } ; [deferred] => { $ crate :: EqlSyntaxKind :: RESERVED_DEFERRED_KW } ; [delegated] => { $ crate :: EqlSyntaxKind :: RESERVED_DELEGATED_KW } ; [deny] => { $ crate :: EqlSyntaxKind :: RESERVED_DENY_KW } ; [empty] => { $ crate :: EqlSyntaxKind :: RESERVED_EMPTY_KW } ; [except] => { $ crate :: EqlSyntaxKind :: RESERVED_EXCEPT_KW } ; [expression] => { $ crate :: EqlSyntaxKind :: RESERVED_EXPRESSION_KW } ; [extension] => { $ crate :: EqlSyntaxKind :: RESERVED_EXTENSION_KW } ; [final] => { $ crate :: EqlSyntaxKind :: RESERVED_FINAL_KW } ; [from] => { $ crate :: EqlSyntaxKind :: RESERVED_FROM_KW } ; [function] => { $ crate :: EqlSyntaxKind :: RESERVED_FUNCTION_KW } ; [future] => { $ crate :: EqlSyntaxKind :: RESERVED_FUTURE_KW } ; [implicit] => { $ crate :: EqlSyntaxKind :: RESERVED_IMPLICIT_KW } ; [infix] => { $ crate :: EqlSyntaxKind :: RESERVED_INFIX_KW } ; [inheritable] => { $ crate :: EqlSyntaxKind :: RESERVED_INHERITABLE_KW } ; [instance] => { $ crate :: EqlSyntaxKind :: RESERVED_INSTANCE_KW } ; [into] => { $ crate :: EqlSyntaxKind :: RESERVED_INTO_KW } ; [isolation] => { $ crate :: EqlSyntaxKind :: RESERVED_ISOLATION_KW } ; [migration] => { $ crate :: EqlSyntaxKind :: RESERVED_MIGRATION_KW } ; [named] => { $ crate :: EqlSyntaxKind :: RESERVED_NAMED_KW } ; [object] => { $ crate :: EqlSyntaxKind :: RESERVED_OBJECT_KW } ; [of] => { $ crate :: EqlSyntaxKind :: RESERVED_OF_KW } ; [only] => { $ crate :: EqlSyntaxKind :: RESERVED_ONLY_KW } ; [onto] => { $ crate :: EqlSyntaxKind :: RESERVED_ONTO_KW } ; [operator] => { $ crate :: EqlSyntaxKind :: RESERVED_OPERATOR_KW } ; [optionality] => { $ crate :: EqlSyntaxKind :: RESERVED_OPTIONALITY_KW } ; [order] => { $ crate :: EqlSyntaxKind :: RESERVED_ORDER_KW } ; [orphan] => { $ crate :: EqlSyntaxKind :: RESERVED_ORPHAN_KW } ; [overloaded] => { $ crate :: EqlSyntaxKind :: RESERVED_OVERLOADED_KW } ; [owned] => { $ crate :: EqlSyntaxKind :: RESERVED_OWNED_KW } ; [package] => { $ crate :: EqlSyntaxKind :: RESERVED_PACKAGE_KW } ; [populate] => { $ crate :: EqlSyntaxKind :: RESERVED_POPULATE_KW } ; [postfix] => { $ crate :: EqlSyntaxKind :: RESERVED_POSTFIX_KW } ; [prefix] => { $ crate :: EqlSyntaxKind :: RESERVED_PREFIX_KW } ; [property] => { $ crate :: EqlSyntaxKind :: RESERVED_PROPERTY_KW } ; [proposed] => { $ crate :: EqlSyntaxKind :: RESERVED_PROPOSED_KW } ; [pseudo] => { $ crate :: EqlSyntaxKind :: RESERVED_PSEUDO_KW } ; [read] => { $ crate :: EqlSyntaxKind :: RESERVED_READ_KW } ; [reject] => { $ crate :: EqlSyntaxKind :: RESERVED_REJECT_KW } ; [release] => { $ crate :: EqlSyntaxKind :: RESERVED_RELEASE_KW } ; [rename] => { $ crate :: EqlSyntaxKind :: RESERVED_RENAME_KW } ; [required] => { $ crate :: EqlSyntaxKind :: RESERVED_REQUIRED_KW } ; [reset] => { $ crate :: EqlSyntaxKind :: RESERVED_RESET_KW } ; [restrict] => { $ crate :: EqlSyntaxKind :: RESERVED_RESTRICT_KW } ; [rewrite] => { $ crate :: EqlSyntaxKind :: RESERVED_REWRITE_KW } ; [role] => { $ crate :: EqlSyntaxKind :: RESERVED_ROLE_KW } ; [roles] => { $ crate :: EqlSyntaxKind :: RESERVED_ROLES_KW } ; [rollup] => { $ crate :: EqlSyntaxKind :: RESERVED_ROLLUP_KW } ; [scalar] => { $ crate :: EqlSyntaxKind :: RESERVED_SCALAR_KW } ; [schema] => { $ crate :: EqlSyntaxKind :: RESERVED_SCHEMA_KW } ; [serializable] => { $ crate :: EqlSyntaxKind :: RESERVED_SERIALIZABLE_KW } ; [session] => { $ crate :: EqlSyntaxKind :: RESERVED_SESSION_KW } ; [source] => { $ crate :: EqlSyntaxKind :: RESERVED_SOURCE_KW } ; [superuser] => { $ crate :: EqlSyntaxKind :: RESERVED_SUPERUSER_KW } ; [system] => { $ crate :: EqlSyntaxKind :: RESERVED_SYSTEM_KW } ; [target] => { $ crate :: EqlSyntaxKind :: RESERVED_TARGET_KW } ; [ternary] => { $ crate :: EqlSyntaxKind :: RESERVED_TERNARY_KW } ; [text] => { $ crate :: EqlSyntaxKind :: RESERVED_TEXT_KW } ; [then] => { $ crate :: EqlSyntaxKind :: RESERVED_THEN_KW } ; [transaction] => { $ crate :: EqlSyntaxKind :: RESERVED_TRANSACTION_KW } ; [unless] => { $ crate :: EqlSyntaxKind :: RESERVED_UNLESS_KW } ; [verbose] => { $ crate :: EqlSyntaxKind :: RESERVED_VERBOSE_KW } ; [version] => { $ crate :: EqlSyntaxKind :: RESERVED_VERSION_KW } ; [view] => { $ crate :: EqlSyntaxKind :: RESERVED_VIEW_KW } ; [write] => { $ crate :: EqlSyntaxKind :: RESERVED_WRITE_KW } ; [analyze] => { $ crate :: EqlSyntaxKind :: RESERVED_ANALYZE_KW } ; [anyarray] => { $ crate :: EqlSyntaxKind :: RESERVED_ANYARRAY_KW } ; [begin] => { $ crate :: EqlSyntaxKind :: RESERVED_BEGIN_KW } ; [case] => { $ crate :: EqlSyntaxKind :: RESERVED_CASE_KW } ; [check] => { $ crate :: EqlSyntaxKind :: RESERVED_CHECK_KW } ; [deallocate] => { $ crate :: EqlSyntaxKind :: RESERVED_DEALLOCATE_KW } ; [discard] => { $ crate :: EqlSyntaxKind :: RESERVED_DISCARD_KW } ; [do] => { $ crate :: EqlSyntaxKind :: RESERVED_DO_KW } ; [end] => { $ crate :: EqlSyntaxKind :: RESERVED_END_KW } ; [execute] => { $ crate :: EqlSyntaxKind :: RESERVED_EXECUTE_KW } ; [explain] => { $ crate :: EqlSyntaxKind :: RESERVED_EXPLAIN_KW } ; [fetch] => { $ crate :: EqlSyntaxKind :: RESERVED_FETCH_KW } ; [get] => { $ crate :: EqlSyntaxKind :: RESERVED_GET_KW } ; [grant] => { $ crate :: EqlSyntaxKind :: RESERVED_GRANT_KW } ; [import] => { $ crate :: EqlSyntaxKind :: RESERVED_IMPORT_KW } ; [listen] => { $ crate :: EqlSyntaxKind :: RESERVED_LISTEN_KW } ; [load] => { $ crate :: EqlSyntaxKind :: RESERVED_LOAD_KW } ; [lock] => { $ crate :: EqlSyntaxKind :: RESERVED_LOCK_KW } ; [match] => { $ crate :: EqlSyntaxKind :: RESERVED_MATCH_KW } ; [move] => { $ crate :: EqlSyntaxKind :: RESERVED_MOVE_KW } ; [notify] => { $ crate :: EqlSyntaxKind :: RESERVED_NOTIFY_KW } ; [over] => { $ crate :: EqlSyntaxKind :: RESERVED_OVER_KW } ; [prepare] => { $ crate :: EqlSyntaxKind :: RESERVED_PREPARE_KW } ; [partition] => { $ crate :: EqlSyntaxKind :: RESERVED_PARTITION_KW } ; [raise] => { $ crate :: EqlSyntaxKind :: RESERVED_RAISE_KW } ; [refresh] => { $ crate :: EqlSyntaxKind :: RESERVED_REFRESH_KW } ; [reindex] => { $ crate :: EqlSyntaxKind :: RESERVED_REINDEX_KW } ; [revoke] => { $ crate :: EqlSyntaxKind :: RESERVED_REVOKE_KW } ; [when] => { $ crate :: EqlSyntaxKind :: RESERVED_WHEN_KW } ; [window] => { $ crate :: EqlSyntaxKind :: RESERVED_WINDOW_KW } ; [never] => { $ crate :: EqlSyntaxKind :: RESERVED_NEVER_KW } ; [asc] => { $ crate :: EqlSyntaxKind :: EDGE_ASC_KW } ; [desc] => { $ crate :: EqlSyntaxKind :: EDGE_DESC_KW } ; [union] => { $ crate :: EqlSyntaxKind :: EDGE_UNION_KW } ; [savepoint] => { $ crate :: EqlSyntaxKind :: EDGE_SAVEPOINT_KW } ; [rollback] => { $ crate :: EqlSyntaxKind :: EDGE_ROLLBACK_KW } ; [annotation] => { $ crate :: EqlSyntaxKind :: SDL_ANNOTATION_KW } ; [link] => { $ crate :: EqlSyntaxKind :: SDL_LINK_KW } ; [multi] => { $ crate :: EqlSyntaxKind :: SDL_MULTI_KW } ; [type] => { $ crate :: EqlSyntaxKind :: SDL_TYPE_KW } ; [using] => { $ crate :: EqlSyntaxKind :: SDL_USING_KW } ; [volatility] => { $ crate :: EqlSyntaxKind :: SDL_VOLATILITY_KW } ; [after] => { $ crate :: EqlSyntaxKind :: DDL_AFTER_KW } ; [alter] => { $ crate :: EqlSyntaxKind :: DDL_ALTER_KW } ; [before] => { $ crate :: EqlSyntaxKind :: DDL_BEFORE_KW } ; [create] => { $ crate :: EqlSyntaxKind :: DDL_CREATE_KW } ; [drop] => { $ crate :: EqlSyntaxKind :: DDL_DROP_KW } ; [first] => { $ crate :: EqlSyntaxKind :: DDL_FIRST_KW } ; [last] => { $ crate :: EqlSyntaxKind :: DDL_LAST_KW } ; [ident] => { $ crate :: EqlSyntaxKind :: IDENT } ; [EOF] => { $ crate :: EqlSyntaxKind :: EOF } ; [#] => { $ crate :: EqlSyntaxKind :: HASH } ; }
+macro_rules! T {
+  [:=] => { $ crate::EqlSyntaxKind::ASSIGN };
+  [+=] => { $ crate::EqlSyntaxKind::ADD_ASSIGN };
+  [-=] => { $ crate::EqlSyntaxKind::SUB_ASSIGN };
+  [->] => { $ crate::EqlSyntaxKind::ARROW };
+  [??] => { $ crate::EqlSyntaxKind::COALESCE };
+  [::] => { $ crate::EqlSyntaxKind::NAMESPACE };
+  [.<] => { $ crate::EqlSyntaxKind::BACKWARD_LINK };
+  ["//"] => { $ crate::EqlSyntaxKind::FLOOR_DIV };
+  [++] => { $ crate::EqlSyntaxKind::CONCAT };
+  [>=] => { $ crate::EqlSyntaxKind::GREATER_EQUAL };
+  [<=] => { $ crate::EqlSyntaxKind::LESS_EQUAL };
+  [!=] => { $ crate::EqlSyntaxKind::NOT_EQUAL };
+  [?=] => { $ crate::EqlSyntaxKind::NOT_DISTINCT_FROM };
+  [?!=] => { $ crate::EqlSyntaxKind::DISTINCT_FROM };
+  [,] => { $ crate::EqlSyntaxKind::COMMA };
+  ['('] => { $ crate::EqlSyntaxKind::OPEN_PAREN };
+  [')'] => { $ crate::EqlSyntaxKind::CLOSE_PAREN };
+  ['['] => { $ crate::EqlSyntaxKind::OPEN_SQUARE };
+  [']'] => { $ crate::EqlSyntaxKind::CLOSE_SQUARE };
+  ['{'] => { $ crate::EqlSyntaxKind::OPEN_CURLY };
+  ['}'] => { $ crate::EqlSyntaxKind::CLOSE_CURLY };
+  [.] => { $ crate::EqlSyntaxKind::DOT };
+  [;] => { $ crate::EqlSyntaxKind::SEMICOLON };
+  [:] => { $ crate::EqlSyntaxKind::COLON };
+  [+] => { $ crate::EqlSyntaxKind::ADD };
+  [-] => { $ crate::EqlSyntaxKind::SUBTRACT };
+  [*] => { $ crate::EqlSyntaxKind::MULTIPLY };
+  [/] => { $ crate::EqlSyntaxKind::DIVIDE };
+  [%] => { $ crate::EqlSyntaxKind::MODULO };
+  [^] => { $ crate::EqlSyntaxKind::POW };
+  [<] => { $ crate::EqlSyntaxKind::LESS };
+  [>] => { $ crate::EqlSyntaxKind::GREATER };
+  [=] => { $ crate::EqlSyntaxKind::EQUAL };
+  [&] => { $ crate::EqlSyntaxKind::AMPERSAND };
+  [|] => { $ crate::EqlSyntaxKind::PIPE };
+  [@] => { $ crate::EqlSyntaxKind::AT };
+  ['`'] => { $ crate::EqlSyntaxKind::BACKTICK };
+  ['$'] => { $ crate::EqlSyntaxKind::DOLLAR };
+  [#] => { $ crate::EqlSyntaxKind::HASH };
+  [abstract] => { $ crate::EqlSyntaxKind::ABSTRACT_KW };
+  [access] => { $ crate::EqlSyntaxKind::ACCESS_KW };
+  [alias] => { $ crate::EqlSyntaxKind::ALIAS_KW };
+  [all] => { $ crate::EqlSyntaxKind::ALL_KW };
+  [allow] => { $ crate::EqlSyntaxKind::ALLOW_KW };
+  [and] => { $ crate::EqlSyntaxKind::AND_KW };
+  [anytuple] => { $ crate::EqlSyntaxKind::ANYTUPLE_KW };
+  [anytype] => { $ crate::EqlSyntaxKind::ANYTYPE_KW };
+  [array] => { $ crate::EqlSyntaxKind::ARRAY_KW };
+  [as] => { $ crate::EqlSyntaxKind::AS_KW };
+  [b] => { $ crate::EqlSyntaxKind::B_KW };
+  [bigint] => { $ crate::EqlSyntaxKind::BIGINT_KW };
+  [bool] => { $ crate::EqlSyntaxKind::BOOL_KW };
+  [by] => { $ crate::EqlSyntaxKind::BY_KW };
+  [bytes] => { $ crate::EqlSyntaxKind::BYTES_KW };
+  [commit] => { $ crate::EqlSyntaxKind::COMMIT_KW };
+  [configure] => { $ crate::EqlSyntaxKind::CONFIGURE_KW };
+  [datetime] => { $ crate::EqlSyntaxKind::DATETIME_KW };
+  [ddl] => { $ crate::EqlSyntaxKind::DDL_KW };
+  [decimal] => { $ crate::EqlSyntaxKind::DECIMAL_KW };
+  [delete] => { $ crate::EqlSyntaxKind::DELETE_KW };
+  [describe] => { $ crate::EqlSyntaxKind::DESCRIBE_KW };
+  [detached] => { $ crate::EqlSyntaxKind::DETACHED_KW };
+  [distinct] => { $ crate::EqlSyntaxKind::DISTINCT_KW };
+  [duration] => { $ crate::EqlSyntaxKind::DURATION_KW };
+  [else] => { $ crate::EqlSyntaxKind::ELSE_KW };
+  [enum] => { $ crate::EqlSyntaxKind::ENUM_KW };
+  [errmessage] => { $ crate::EqlSyntaxKind::ERRMESSAGE_KW };
+  [exists] => { $ crate::EqlSyntaxKind::EXISTS_KW };
+  [extending] => { $ crate::EqlSyntaxKind::EXTENDING_KW };
+  [false] => { $ crate::EqlSyntaxKind::FALSE_KW };
+  [filter] => { $ crate::EqlSyntaxKind::FILTER_KW };
+  [float32] => { $ crate::EqlSyntaxKind::FLOAT32_KW };
+  [float64] => { $ crate::EqlSyntaxKind::FLOAT64_KW };
+  [for] => { $ crate::EqlSyntaxKind::FOR_KW };
+  [global] => { $ crate::EqlSyntaxKind::GLOBAL_KW };
+  [group] => { $ crate::EqlSyntaxKind::GROUP_KW };
+  [if] => { $ crate::EqlSyntaxKind::IF_KW };
+  [ilike] => { $ crate::EqlSyntaxKind::ILIKE_KW };
+  [in] => { $ crate::EqlSyntaxKind::IN_KW };
+  [index] => { $ crate::EqlSyntaxKind::INDEX_KW };
+  [insert] => { $ crate::EqlSyntaxKind::INSERT_KW };
+  [int16] => { $ crate::EqlSyntaxKind::INT16_KW };
+  [int32] => { $ crate::EqlSyntaxKind::INT32_KW };
+  [int64] => { $ crate::EqlSyntaxKind::INT64_KW };
+  [introspect] => { $ crate::EqlSyntaxKind::INTROSPECT_KW };
+  [is] => { $ crate::EqlSyntaxKind::IS_KW };
+  [json] => { $ crate::EqlSyntaxKind::JSON_KW };
+  [like] => { $ crate::EqlSyntaxKind::LIKE_KW };
+  [limit] => { $ crate::EqlSyntaxKind::LIMIT_KW };
+  [module] => { $ crate::EqlSyntaxKind::MODULE_KW };
+  [not] => { $ crate::EqlSyntaxKind::NOT_KW };
+  [offset] => { $ crate::EqlSyntaxKind::OFFSET_KW };
+  [on] => { $ crate::EqlSyntaxKind::ON_KW };
+  [optional] => { $ crate::EqlSyntaxKind::OPTIONAL_KW };
+  [or] => { $ crate::EqlSyntaxKind::OR_KW };
+  [policy] => { $ crate::EqlSyntaxKind::POLICY_KW };
+  [r] => { $ crate::EqlSyntaxKind::R_KW };
+  [range] => { $ crate::EqlSyntaxKind::RANGE_KW };
+  [sdl] => { $ crate::EqlSyntaxKind::SDL_KW };
+  [select] => { $ crate::EqlSyntaxKind::SELECT_KW };
+  [sequence] => { $ crate::EqlSyntaxKind::SEQUENCE_KW };
+  [set] => { $ crate::EqlSyntaxKind::SET_KW };
+  [single] => { $ crate::EqlSyntaxKind::SINGLE_KW };
+  [start] => { $ crate::EqlSyntaxKind::START_KW };
+  [std] => { $ crate::EqlSyntaxKind::STD_KW };
+  [str] => { $ crate::EqlSyntaxKind::STR_KW };
+  [to] => { $ crate::EqlSyntaxKind::TO_KW };
+  [true] => { $ crate::EqlSyntaxKind::TRUE_KW };
+  [tuple] => { $ crate::EqlSyntaxKind::TUPLE_KW };
+  [typeof] => { $ crate::EqlSyntaxKind::TYPEOF_KW };
+  [update] => { $ crate::EqlSyntaxKind::UPDATE_KW };
+  [uuid] => { $ crate::EqlSyntaxKind::UUID_KW };
+  [variadic] => { $ crate::EqlSyntaxKind::VARIADIC_KW };
+  [with] => { $ crate::EqlSyntaxKind::WITH_KW };
+  [abort] => { $ crate::EqlSyntaxKind::RESERVED_ABORT_KW };
+  [applied] => { $ crate::EqlSyntaxKind::RESERVED_APPLIED_KW };
+  [assignment] => { $ crate::EqlSyntaxKind::RESERVED_ASSIGNMENT_KW };
+  [cardinality] => { $ crate::EqlSyntaxKind::RESERVED_CARDINALITY_KW };
+  [cast] => { $ crate::EqlSyntaxKind::RESERVED_CAST_KW };
+  [committed] => { $ crate::EqlSyntaxKind::RESERVED_COMMITTED_KW };
+  [config] => { $ crate::EqlSyntaxKind::RESERVED_CONFIG_KW };
+  [conflict] => { $ crate::EqlSyntaxKind::RESERVED_CONFLICT_KW };
+  [constraint] => { $ crate::EqlSyntaxKind::RESERVED_CONSTRAINT_KW };
+  [cube] => { $ crate::EqlSyntaxKind::RESERVED_CUBE_KW };
+  [current] => { $ crate::EqlSyntaxKind::RESERVED_CURRENT_KW };
+  [database] => { $ crate::EqlSyntaxKind::RESERVED_DATABASE_KW };
+  [declare] => { $ crate::EqlSyntaxKind::RESERVED_DECLARE_KW };
+  [default] => { $ crate::EqlSyntaxKind::RESERVED_DEFAULT_KW };
+  [deferrable] => { $ crate::EqlSyntaxKind::RESERVED_DEFERRABLE_KW };
+  [deferred] => { $ crate::EqlSyntaxKind::RESERVED_DEFERRED_KW };
+  [delegated] => { $ crate::EqlSyntaxKind::RESERVED_DELEGATED_KW };
+  [deny] => { $ crate::EqlSyntaxKind::RESERVED_DENY_KW };
+  [empty] => { $ crate::EqlSyntaxKind::RESERVED_EMPTY_KW };
+  [except] => { $ crate::EqlSyntaxKind::RESERVED_EXCEPT_KW };
+  [expression] => { $ crate::EqlSyntaxKind::RESERVED_EXPRESSION_KW };
+  [extension] => { $ crate::EqlSyntaxKind::RESERVED_EXTENSION_KW };
+  [final] => { $ crate::EqlSyntaxKind::RESERVED_FINAL_KW };
+  [from] => { $ crate::EqlSyntaxKind::RESERVED_FROM_KW };
+  [function] => { $ crate::EqlSyntaxKind::RESERVED_FUNCTION_KW };
+  [future] => { $ crate::EqlSyntaxKind::RESERVED_FUTURE_KW };
+  [implicit] => { $ crate::EqlSyntaxKind::RESERVED_IMPLICIT_KW };
+  [infix] => { $ crate::EqlSyntaxKind::RESERVED_INFIX_KW };
+  [inheritable] => { $ crate::EqlSyntaxKind::RESERVED_INHERITABLE_KW };
+  [instance] => { $ crate::EqlSyntaxKind::RESERVED_INSTANCE_KW };
+  [into] => { $ crate::EqlSyntaxKind::RESERVED_INTO_KW };
+  [isolation] => { $ crate::EqlSyntaxKind::RESERVED_ISOLATION_KW };
+  [migration] => { $ crate::EqlSyntaxKind::RESERVED_MIGRATION_KW };
+  [named] => { $ crate::EqlSyntaxKind::RESERVED_NAMED_KW };
+  [object] => { $ crate::EqlSyntaxKind::RESERVED_OBJECT_KW };
+  [of] => { $ crate::EqlSyntaxKind::RESERVED_OF_KW };
+  [only] => { $ crate::EqlSyntaxKind::RESERVED_ONLY_KW };
+  [onto] => { $ crate::EqlSyntaxKind::RESERVED_ONTO_KW };
+  [operator] => { $ crate::EqlSyntaxKind::RESERVED_OPERATOR_KW };
+  [optionality] => { $ crate::EqlSyntaxKind::RESERVED_OPTIONALITY_KW };
+  [order] => { $ crate::EqlSyntaxKind::RESERVED_ORDER_KW };
+  [orphan] => { $ crate::EqlSyntaxKind::RESERVED_ORPHAN_KW };
+  [overloaded] => { $ crate::EqlSyntaxKind::RESERVED_OVERLOADED_KW };
+  [owned] => { $ crate::EqlSyntaxKind::RESERVED_OWNED_KW };
+  [package] => { $ crate::EqlSyntaxKind::RESERVED_PACKAGE_KW };
+  [populate] => { $ crate::EqlSyntaxKind::RESERVED_POPULATE_KW };
+  [postfix] => { $ crate::EqlSyntaxKind::RESERVED_POSTFIX_KW };
+  [prefix] => { $ crate::EqlSyntaxKind::RESERVED_PREFIX_KW };
+  [property] => { $ crate::EqlSyntaxKind::RESERVED_PROPERTY_KW };
+  [proposed] => { $ crate::EqlSyntaxKind::RESERVED_PROPOSED_KW };
+  [pseudo] => { $ crate::EqlSyntaxKind::RESERVED_PSEUDO_KW };
+  [read] => { $ crate::EqlSyntaxKind::RESERVED_READ_KW };
+  [reject] => { $ crate::EqlSyntaxKind::RESERVED_REJECT_KW };
+  [release] => { $ crate::EqlSyntaxKind::RESERVED_RELEASE_KW };
+  [rename] => { $ crate::EqlSyntaxKind::RESERVED_RENAME_KW };
+  [required] => { $ crate::EqlSyntaxKind::RESERVED_REQUIRED_KW };
+  [reset] => { $ crate::EqlSyntaxKind::RESERVED_RESET_KW };
+  [restrict] => { $ crate::EqlSyntaxKind::RESERVED_RESTRICT_KW };
+  [rewrite] => { $ crate::EqlSyntaxKind::RESERVED_REWRITE_KW };
+  [role] => { $ crate::EqlSyntaxKind::RESERVED_ROLE_KW };
+  [roles] => { $ crate::EqlSyntaxKind::RESERVED_ROLES_KW };
+  [rollup] => { $ crate::EqlSyntaxKind::RESERVED_ROLLUP_KW };
+  [scalar] => { $ crate::EqlSyntaxKind::RESERVED_SCALAR_KW };
+  [schema] => { $ crate::EqlSyntaxKind::RESERVED_SCHEMA_KW };
+  [serializable] => { $ crate::EqlSyntaxKind::RESERVED_SERIALIZABLE_KW };
+  [session] => { $ crate::EqlSyntaxKind::RESERVED_SESSION_KW };
+  [source] => { $ crate::EqlSyntaxKind::RESERVED_SOURCE_KW };
+  [superuser] => { $ crate::EqlSyntaxKind::RESERVED_SUPERUSER_KW };
+  [system] => { $ crate::EqlSyntaxKind::RESERVED_SYSTEM_KW };
+  [target] => { $ crate::EqlSyntaxKind::RESERVED_TARGET_KW };
+  [ternary] => { $ crate::EqlSyntaxKind::RESERVED_TERNARY_KW };
+  [text] => { $ crate::EqlSyntaxKind::RESERVED_TEXT_KW };
+  [then] => { $ crate::EqlSyntaxKind::RESERVED_THEN_KW };
+  [transaction] => { $ crate::EqlSyntaxKind::RESERVED_TRANSACTION_KW };
+  [unless] => { $ crate::EqlSyntaxKind::RESERVED_UNLESS_KW };
+  [verbose] => { $ crate::EqlSyntaxKind::RESERVED_VERBOSE_KW };
+  [version] => { $ crate::EqlSyntaxKind::RESERVED_VERSION_KW };
+  [view] => { $ crate::EqlSyntaxKind::RESERVED_VIEW_KW };
+  [write] => { $ crate::EqlSyntaxKind::RESERVED_WRITE_KW };
+  [analyze] => { $ crate::EqlSyntaxKind::RESERVED_ANALYZE_KW };
+  [anyarray] => { $ crate::EqlSyntaxKind::RESERVED_ANYARRAY_KW };
+  [begin] => { $ crate::EqlSyntaxKind::RESERVED_BEGIN_KW };
+  [case] => { $ crate::EqlSyntaxKind::RESERVED_CASE_KW };
+  [check] => { $ crate::EqlSyntaxKind::RESERVED_CHECK_KW };
+  [deallocate] => { $ crate::EqlSyntaxKind::RESERVED_DEALLOCATE_KW };
+  [discard] => { $ crate::EqlSyntaxKind::RESERVED_DISCARD_KW };
+  [do] => { $ crate::EqlSyntaxKind::RESERVED_DO_KW };
+  [end] => { $ crate::EqlSyntaxKind::RESERVED_END_KW };
+  [execute] => { $ crate::EqlSyntaxKind::RESERVED_EXECUTE_KW };
+  [explain] => { $ crate::EqlSyntaxKind::RESERVED_EXPLAIN_KW };
+  [fetch] => { $ crate::EqlSyntaxKind::RESERVED_FETCH_KW };
+  [get] => { $ crate::EqlSyntaxKind::RESERVED_GET_KW };
+  [grant] => { $ crate::EqlSyntaxKind::RESERVED_GRANT_KW };
+  [import] => { $ crate::EqlSyntaxKind::RESERVED_IMPORT_KW };
+  [listen] => { $ crate::EqlSyntaxKind::RESERVED_LISTEN_KW };
+  [load] => { $ crate::EqlSyntaxKind::RESERVED_LOAD_KW };
+  [lock] => { $ crate::EqlSyntaxKind::RESERVED_LOCK_KW };
+  [match] => { $ crate::EqlSyntaxKind::RESERVED_MATCH_KW };
+  [move] => { $ crate::EqlSyntaxKind::RESERVED_MOVE_KW };
+  [notify] => { $ crate::EqlSyntaxKind::RESERVED_NOTIFY_KW };
+  [over] => { $ crate::EqlSyntaxKind::RESERVED_OVER_KW };
+  [prepare] => { $ crate::EqlSyntaxKind::RESERVED_PREPARE_KW };
+  [partition] => { $ crate::EqlSyntaxKind::RESERVED_PARTITION_KW };
+  [raise] => { $ crate::EqlSyntaxKind::RESERVED_RAISE_KW };
+  [refresh] => { $ crate::EqlSyntaxKind::RESERVED_REFRESH_KW };
+  [reindex] => { $ crate::EqlSyntaxKind::RESERVED_REINDEX_KW };
+  [revoke] => { $ crate::EqlSyntaxKind::RESERVED_REVOKE_KW };
+  [when] => { $ crate::EqlSyntaxKind::RESERVED_WHEN_KW };
+  [window] => { $ crate::EqlSyntaxKind::RESERVED_WINDOW_KW };
+  [never] => { $ crate::EqlSyntaxKind::RESERVED_NEVER_KW };
+  [asc] => { $ crate::EqlSyntaxKind::EDGE_ASC_KW };
+  [desc] => { $ crate::EqlSyntaxKind::EDGE_DESC_KW };
+  [union] => { $ crate::EqlSyntaxKind::EDGE_UNION_KW };
+  [savepoint] => { $ crate::EqlSyntaxKind::EDGE_SAVEPOINT_KW };
+  [rollback] => { $ crate::EqlSyntaxKind::EDGE_ROLLBACK_KW };
+  [annotation] => { $ crate::EqlSyntaxKind::SDL_ANNOTATION_KW };
+  [link] => { $ crate::EqlSyntaxKind::SDL_LINK_KW };
+  [multi] => { $ crate::EqlSyntaxKind::SDL_MULTI_KW };
+  [type] => { $ crate::EqlSyntaxKind::SDL_TYPE_KW };
+  [using] => { $ crate::EqlSyntaxKind::SDL_USING_KW };
+  [volatility] => { $ crate::EqlSyntaxKind::SDL_VOLATILITY_KW };
+  [after] => { $ crate::EqlSyntaxKind::DDL_AFTER_KW };
+  [alter] => { $ crate::EqlSyntaxKind::DDL_ALTER_KW };
+  [before] => { $ crate::EqlSyntaxKind::DDL_BEFORE_KW };
+  [create] => { $ crate::EqlSyntaxKind::DDL_CREATE_KW };
+  [drop] => { $ crate::EqlSyntaxKind::DDL_DROP_KW };
+  [first] => { $ crate::EqlSyntaxKind::DDL_FIRST_KW };
+  [last] => { $ crate::EqlSyntaxKind::DDL_LAST_KW };
+  [ident] => { $ crate::EqlSyntaxKind::IDENT };
+  [EOF] => { $ crate::EqlSyntaxKind::EOF };
+  [#] => { $ crate::EqlSyntaxKind::HASH };
+}
