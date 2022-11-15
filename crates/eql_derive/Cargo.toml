@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 
 [dev-dependencies]
-insta.workspace = true
+insta = { workspace = true }
